@@ -1,0 +1,27 @@
+-i https://pypi.python.org/simple
+Django==2.1.7
+django-cors-headers
+django-environ==0.4.5
+djangorestframework==3.9.2
+uwsgi
+twilio==6.35.5
+
+bcrypt==3.1.2
+celery==4.0.2
+cryptography
+django-configurations
+psycopg2-binary==2.8.6
+pycparser
+pycrypto
+requests
+jsons
+six
+google
+google_auth_oauthlib
+requests
+boto3==1.5.26
+django-ratelimit
+django-allauth
+dj-rest-auth[with_social]==4.0.0
+django-storages[google]
+google-api-python-client

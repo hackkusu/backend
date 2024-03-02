@@ -1,0 +1,7 @@
+-r base.txt
+
+ipython==7.4.0
+Werkzeug==0.15.2
+django-extensions
+django_extensions
+django-s3-storage

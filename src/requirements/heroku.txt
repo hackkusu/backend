@@ -1,0 +1,5 @@
+-r base.txt
+
+django-s3-storage
+django_s3_storage
+django-ratelimit

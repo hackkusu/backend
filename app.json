@@ -1,0 +1,23 @@
+{
+  "name": "heroku-s3-sync",
+  "addons": [
+        {
+          "plan": "heroku-postgresql:mini",
+          "as": "DATABASE"
+        }
+  ],
+  "environments": {
+    "review": {
+      "addons": [
+        {
+          "plan": "heroku-postgresql:mini",
+          "as": "DATABASE"
+        }
+      ]
+    }
+  },
+  "env": {
+    "HEROKU_DEPLOY": true
+  },
+  "stack": "container"
+}

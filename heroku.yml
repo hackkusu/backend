@@ -1,0 +1,25 @@
+setup:
+ addons:
+   - plan: heroku-postgresql
+build:
+ docker:
+   web: ./Dockerfile
+ config:
+   REQUIREMENTS_FILENAME: heroku
+release:
+ image: web
+ command:
+   - bash ./release.sh
+run:
+ web: uwsgi --http 0:$PORT --wsgi-file ./config/wsgi.py --master --processes 4 --threads 2
+
+# run:
+#   web: bundle exec puma -C config/puma.rb
+#   worker:
+#     command:
+#       - python myworker.py
+#     image: web
+# https://devcenter.heroku.com/articles/build-docker-images-heroku-yml#run-defining-the-processes-to-run
+# https://devcenter.heroku.com/articles/procfile
+# https://devcenter.heroku.com/articles/python-rq
+# https://devcenter.heroku.com/articles/scheduled-jobs-custom-clock-processes
