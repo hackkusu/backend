@@ -1,6 +1,6 @@
 # api microservice
 
-<a href="https://heroku.com/deploy?template=https://github.com/turbonemesis/heroku-s3-sync.git">
+<a href="https://heroku.com/deploy?template=https://github.com/hackkusu/backend.git">
   <img src="https://www.herokucdn.com/deploy/button.svg" alt="Deploy">
 </a>
 
