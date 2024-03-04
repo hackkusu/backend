@@ -61,8 +61,8 @@ https://stackoverflow.com/questions/41394761/the-create-method-does-not-support-
 2023
 
 ```shell
-python manage.py createsuperuser --username chase --email chase@gfic.io
-python manage.py drf_create_token chase
+python manage.py createsuperuser --username superuser --email superuser@gfic.io
+python manage.py drf_create_token superuser
 ```
 
 ```
@@ -75,7 +75,7 @@ curl --location 'http://localhost:8000/api/auth/login/' \
 ```
 
 ```shell
-python manage.py dumpdata auth.user authtoken account sessions sites --indent 2 > superuser.json
+python manage.py dumpdata auth.user authtoken account --indent 2 > superuser.json
 
 ```
 

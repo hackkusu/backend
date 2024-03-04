@@ -3,152 +3,26 @@
   "model": "auth.user",
   "pk": 1,
   "fields": {
-    "password": "pbkdf2_sha256$120000$9H0NAuxVsMUn$W/OqRGXM/pnYr+3Vr2R+msNrVWaz2yE6zix4zTULvt8=",
-    "last_login": "2023-11-30T22:11:56.164Z",
-    "is_superuser": true,
-    "username": "chase",
-    "first_name": "",
-    "last_name": "",
-    "email": "chase3111@gmail.com",
-    "is_staff": false,
-    "is_active": true,
-    "date_joined": "2023-11-20T20:45:16.255Z",
-    "groups": [],
-    "user_permissions": []
-  }
-},
-{
-  "model": "auth.user",
-  "pk": 2,
-  "fields": {
-    "password": "pbkdf2_sha256$120000$rYvoqN97xENn$vuJYFogDVSOmQmZZgm15rfFs/UDNgLzEyL2Tocen7lM=",
-    "last_login": "2023-11-26T23:32:58.914Z",
-    "is_superuser": true,
-    "username": "cwgibb",
-    "first_name": "",
-    "last_name": "",
-    "email": "data3600@gfic.io",
-    "is_staff": true,
-    "is_active": true,
-    "date_joined": "2023-11-26T23:26:04.238Z",
-    "groups": [],
-    "user_permissions": []
-  }
-},
-{
-  "model": "auth.user",
-  "pk": 3,
-  "fields": {
-    "password": "pbkdf2_sha256$120000$kcB9e1MD8Lkh$qXzGr/g/9iC2HAbs2xcT6wwR/KDXeG9mrDFOqsHerbQ=",
+    "password": "pbkdf2_sha256$120000$9thCItHxcdWt$ILbz0WjAzXylzcorlYMAtb/M1HTesfi5mZx9bUNvEGU=",
     "last_login": null,
     "is_superuser": true,
-    "username": "gclouduser",
+    "username": "superuser",
     "first_name": "",
     "last_name": "",
-    "email": "gcloud@gfic.io",
+    "email": "superuser@gfic.io",
     "is_staff": true,
     "is_active": true,
-    "date_joined": "2023-12-01T02:01:45.047Z",
+    "date_joined": "2024-03-04T20:17:11.121Z",
     "groups": [],
     "user_permissions": []
   }
 },
 {
   "model": "authtoken.token",
-  "pk": "33e57948be8cef6054d251a1e411312221bd6c88",
-  "fields": {
-    "user": 3,
-    "created": "2023-12-01T02:02:03.410Z"
-  }
-},
-{
-  "model": "authtoken.token",
-  "pk": "8e6f2feefb649e394faf985c84ea846ebd347bc0",
+  "pk": "8067ed10ba2a0cbf53e4c98021afaee1e9788245",
   "fields": {
     "user": 1,
-    "created": "2023-11-25T19:33:30.642Z"
-  }
-},
-{
-  "model": "account.emailaddress",
-  "pk": 1,
-  "fields": {
-    "user": 1,
-    "email": "chase3111@gmail.com",
-    "verified": false,
-    "primary": true
-  }
-},
-{
-  "model": "sessions.session",
-  "pk": "44jv6092uuat5df4v93f2e9cshty00a6",
-  "fields": {
-    "session_data": "YjE4OGYxMWQyNmQ2MWRiMjRkOWUwMmI5MTdmYWE3ZjA4MDJjYTJjYjp7Il9hdXRoX3VzZXJfaWQiOiIxIiwiX2F1dGhfdXNlcl9iYWNrZW5kIjoiZGphbmdvLmNvbnRyaWIuYXV0aC5iYWNrZW5kcy5Nb2RlbEJhY2tlbmQiLCJfYXV0aF91c2VyX2hhc2giOiIyZmUwYjkyZDBlZmY0ZmI1MjVmNjQ0YTRhMGY0ZWU5YjY5MzI2Nzk4In0=",
-    "expire_date": "2023-12-14T05:00:58.117Z"
-  }
-},
-{
-  "model": "sessions.session",
-  "pk": "6kczx4cxnnfnka03z8y1u1j5vyzpuj3f",
-  "fields": {
-    "session_data": "YjE4OGYxMWQyNmQ2MWRiMjRkOWUwMmI5MTdmYWE3ZjA4MDJjYTJjYjp7Il9hdXRoX3VzZXJfaWQiOiIxIiwiX2F1dGhfdXNlcl9iYWNrZW5kIjoiZGphbmdvLmNvbnRyaWIuYXV0aC5iYWNrZW5kcy5Nb2RlbEJhY2tlbmQiLCJfYXV0aF91c2VyX2hhc2giOiIyZmUwYjkyZDBlZmY0ZmI1MjVmNjQ0YTRhMGY0ZWU5YjY5MzI2Nzk4In0=",
-    "expire_date": "2023-12-14T03:51:42.330Z"
-  }
-},
-{
-  "model": "sessions.session",
-  "pk": "li197yhopxc3nxj0fwnm7kbfi24wx8gk",
-  "fields": {
-    "session_data": "YjE4OGYxMWQyNmQ2MWRiMjRkOWUwMmI5MTdmYWE3ZjA4MDJjYTJjYjp7Il9hdXRoX3VzZXJfaWQiOiIxIiwiX2F1dGhfdXNlcl9iYWNrZW5kIjoiZGphbmdvLmNvbnRyaWIuYXV0aC5iYWNrZW5kcy5Nb2RlbEJhY2tlbmQiLCJfYXV0aF91c2VyX2hhc2giOiIyZmUwYjkyZDBlZmY0ZmI1MjVmNjQ0YTRhMGY0ZWU5YjY5MzI2Nzk4In0=",
-    "expire_date": "2023-12-14T02:50:03.486Z"
-  }
-},
-{
-  "model": "sessions.session",
-  "pk": "o0h9d5bz0jxys6xynsptbz2l9pjm961j",
-  "fields": {
-    "session_data": "YjE4OGYxMWQyNmQ2MWRiMjRkOWUwMmI5MTdmYWE3ZjA4MDJjYTJjYjp7Il9hdXRoX3VzZXJfaWQiOiIxIiwiX2F1dGhfdXNlcl9iYWNrZW5kIjoiZGphbmdvLmNvbnRyaWIuYXV0aC5iYWNrZW5kcy5Nb2RlbEJhY2tlbmQiLCJfYXV0aF91c2VyX2hhc2giOiIyZmUwYjkyZDBlZmY0ZmI1MjVmNjQ0YTRhMGY0ZWU5YjY5MzI2Nzk4In0=",
-    "expire_date": "2023-12-14T05:25:32.539Z"
-  }
-},
-{
-  "model": "sessions.session",
-  "pk": "q1c7uaarklhm07nx6hz938qhuqtkggq3",
-  "fields": {
-    "session_data": "YjE4OGYxMWQyNmQ2MWRiMjRkOWUwMmI5MTdmYWE3ZjA4MDJjYTJjYjp7Il9hdXRoX3VzZXJfaWQiOiIxIiwiX2F1dGhfdXNlcl9iYWNrZW5kIjoiZGphbmdvLmNvbnRyaWIuYXV0aC5iYWNrZW5kcy5Nb2RlbEJhY2tlbmQiLCJfYXV0aF91c2VyX2hhc2giOiIyZmUwYjkyZDBlZmY0ZmI1MjVmNjQ0YTRhMGY0ZWU5YjY5MzI2Nzk4In0=",
-    "expire_date": "2023-12-14T02:25:50.829Z"
-  }
-},
-{
-  "model": "sessions.session",
-  "pk": "sw20cncqc5f25l21e7swwz698w5sofh6",
-  "fields": {
-    "session_data": "ZDc2ZTNkZjY1N2FlYWMxOTlkZTJjMDI4YTU4ZTc4YmQyYjZiNmIwYjp7Il9hdXRoX3VzZXJfaWQiOiIyIiwiX2F1dGhfdXNlcl9iYWNrZW5kIjoiZGphbmdvLmNvbnRyaWIuYXV0aC5iYWNrZW5kcy5Nb2RlbEJhY2tlbmQiLCJfYXV0aF91c2VyX2hhc2giOiIwNzNlZDRkM2EzNjg2MTg0OWFjOWU2YTI5MmZiYTY1MjEwZGRkNmZkIn0=",
-    "expire_date": "2023-12-10T23:32:58.916Z"
-  }
-},
-{
-  "model": "sessions.session",
-  "pk": "w8c6t3qtwi2xw5k6jt08zyg6wj6wn1o5",
-  "fields": {
-    "session_data": "YjE4OGYxMWQyNmQ2MWRiMjRkOWUwMmI5MTdmYWE3ZjA4MDJjYTJjYjp7Il9hdXRoX3VzZXJfaWQiOiIxIiwiX2F1dGhfdXNlcl9iYWNrZW5kIjoiZGphbmdvLmNvbnRyaWIuYXV0aC5iYWNrZW5kcy5Nb2RlbEJhY2tlbmQiLCJfYXV0aF91c2VyX2hhc2giOiIyZmUwYjkyZDBlZmY0ZmI1MjVmNjQ0YTRhMGY0ZWU5YjY5MzI2Nzk4In0=",
-    "expire_date": "2023-12-14T02:27:18.748Z"
-  }
-},
-{
-  "model": "sessions.session",
-  "pk": "wdodmk29fw9vtd5viuryi3qi8bo5zhd7",
-  "fields": {
-    "session_data": "YjE4OGYxMWQyNmQ2MWRiMjRkOWUwMmI5MTdmYWE3ZjA4MDJjYTJjYjp7Il9hdXRoX3VzZXJfaWQiOiIxIiwiX2F1dGhfdXNlcl9iYWNrZW5kIjoiZGphbmdvLmNvbnRyaWIuYXV0aC5iYWNrZW5kcy5Nb2RlbEJhY2tlbmQiLCJfYXV0aF91c2VyX2hhc2giOiIyZmUwYjkyZDBlZmY0ZmI1MjVmNjQ0YTRhMGY0ZWU5YjY5MzI2Nzk4In0=",
-    "expire_date": "2023-12-14T22:11:56.199Z"
-  }
-},
-{
-  "model": "sites.site",
-  "pk": 3,
-  "fields": {
-    "domain": "example.com",
-    "name": "example.com"
+    "created": "2024-03-04T20:17:52.438Z"
   }
 }
 ]
