@@ -8,5 +8,5 @@ urlpatterns = [
     path('api/', include('polls.urls')),
     # path('accounts/', include('allauth.urls')),
     path('logout', LogoutView.as_view()),
-    # path('', TemplateView.as_view(template_name="base.html")),
+    path('', TemplateView.as_view(template_name="base.html")),
 ]

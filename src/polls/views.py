@@ -46,7 +46,7 @@ import os
 
 @never_cache
 @csrf_exempt
-@require_http_methods(["POST"])
+@require_http_methods(["GET"])
 def get_ip(request: HttpRequest, *args, **kwargs) -> HttpResponse:
 
     print(HelperService().get_ip_address(request))
