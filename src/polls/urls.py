@@ -11,7 +11,7 @@ from . import views
 
 __app_name__ = 'polls'
 
-from .views import UserDetailAPI, RegisterUserAPIView
+from .views import UserDetailAPI, RegisterUserAPIView, get_ip
 
 urlpatterns = [
     # path('auth/', include('polls.authentication.urls')),
@@ -21,6 +21,7 @@ urlpatterns = [
     path("auth/get-details/", UserDetailAPI.as_view()),
     path('auth/register/', RegisterUserAPIView.as_view()),
 
+    url(r'^get_ip$', get_ip),
     url(r'^createTask$', TwilioHandler.as_view()),
     # url(r'^v1/', include(router.urls)),
 ]

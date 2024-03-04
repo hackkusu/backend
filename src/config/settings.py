@@ -262,3 +262,5 @@ MEDIA_ROOT = (root - 1)('media')
 # GS_BUCKET_NAME = '00-zoot-video-queue'
 
 # AUTH_USER_MODEL='polls.User'
+
+TOKEN_SERIALIZER='polls.serializers.TokenSerializer'

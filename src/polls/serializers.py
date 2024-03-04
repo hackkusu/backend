@@ -1,3 +1,4 @@
+from dj_rest_auth.models import TokenModel
 from rest_framework import serializers
 from django.contrib.auth.models import User
 from rest_framework.response import Response
@@ -50,4 +51,11 @@ class RegisterSerializer(serializers.ModelSerializer):
     self.token = token.key
     return user
 
+class TokenSerializer(serializers.ModelSerializer):
+    """
+    Serializer for Token model.
+    """
 
+    class Meta:
+        model = TokenModel
+        fields = ('key',)
