@@ -10,3 +10,8 @@ from django.contrib import admin
 # @admin.register(Question)
 # class QuestionAdmin(admin.ModelAdmin):
 #     pass
+
+# from django.contrib import admin
+# from .models import Profile
+#
+# admin.site.register(Profile)

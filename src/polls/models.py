@@ -1,7 +1,7 @@
-from django.db import models
-
 # Create your models here.
 from django.db.models import Model
+from django.contrib.auth.models import AbstractUser
+from django.db import models
 from django.test import TestCase
 
 # Create your tests here.
@@ -21,3 +21,12 @@ storage = GoogleCloudStorage()
 #     """
 #     class Meta(AbstractUser.Meta):
 #         swappable = 'AUTH_USER_MODEL'
+
+
+
+class User(AbstractUser):
+    phone_number = models.CharField(max_length=20, blank=True)
+    class Meta:
+        permissions = [
+            ("can_create", "Can create a user"),
+        ]

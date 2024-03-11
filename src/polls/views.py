@@ -15,12 +15,10 @@ from rest_framework.permissions import AllowAny
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from .serializers import UserSerializer,RegisterSerializer
-from django.contrib.auth.models import User
 from rest_framework.authentication import TokenAuthentication
 from rest_framework import generics
-
-
 from django.contrib.auth import get_user_model
+
 from django.contrib.auth.decorators import login_required, user_passes_test, permission_required
 from django.http import HttpRequest, HttpResponse, HttpResponseBadRequest
 from django.middleware.csrf import get_token
