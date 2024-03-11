@@ -30,3 +30,4 @@ class User(AbstractUser):
         permissions = [
             ("can_create", "Can create a user"),
         ]
+
