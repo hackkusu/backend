@@ -11,7 +11,7 @@ from . import views
 
 __app_name__ = 'polls'
 
-from .views import UserDetailAPI, RegisterUserAPIView, get_ip
+from .views import UserDetailAPI, RegisterUserAPIView, get_ip_anonymous, get_ip_login_required, get_ip_permission_required
 
 urlpatterns = [
     # path('auth/', include('polls.authentication.urls')),
@@ -21,7 +21,10 @@ urlpatterns = [
     path("auth/get-details/", UserDetailAPI.as_view()),
     path('auth/register/', RegisterUserAPIView.as_view()),
 
-    url(r'^get_ip$', get_ip),
+    url(r'^get_ip_login_required$', get_ip_login_required),
+    url(r'^get_ip_permission_required$', get_ip_permission_required),
+    url(r'^get_ip_anonymous$', get_ip_anonymous),
     url(r'^createTask$', TwilioHandler.as_view()),
+    url(r'^upload_video$', views.file_upload, name="upload_video"),
     # url(r'^v1/', include(router.urls)),
 ]

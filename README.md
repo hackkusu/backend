@@ -75,7 +75,8 @@ curl --location 'http://localhost:8000/api/auth/login/' \
 ```
 
 ```shell
-python manage.py dumpdata auth.user authtoken account --indent 2 > superuser.json
+ python manage.py dumpdata auth authtoken account polls.user --indent 2 > superuser.json
+
 
 ```
 
