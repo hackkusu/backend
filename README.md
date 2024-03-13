@@ -94,3 +94,8 @@ https://www.digitalocean.com/community/tutorials/how-to-add-authentication-to-yo
 angular
 
 https://nx.dev/getting-started/tutorials/angular-standalone-tutorial
+
+django rest
+
+https://dynamic-rest.readthedocs.io/en/latest/tutorial.html
+
