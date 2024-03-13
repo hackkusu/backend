@@ -59,6 +59,7 @@ INSTALLED_APPS = [
     # 'allauth.socialaccount.providers.google',
     'dj_rest_auth',
     'dj_rest_auth.registration',
+    'graphene_django',
 
 ] + COMMON + APPS
 
@@ -69,8 +70,11 @@ INSTALLED_APPS = [
 INSTALLED_APPS += PRODUCTION
 
 AUTHENTICATION_BACKENDS = [
-    'django.contrib.auth.backends.ModelBackend',
+    # 'django.contrib.auth.backends.ModelBackend',
     # 'allauth.account.auth_backends.AuthenticationBackend'
+
+    # 'graphql_jwt.backends.JSONWebTokenBackend',
+    'django.contrib.auth.backends.ModelBackend',
 ]
 
 # SOCIALACCOUNT_PROVIDERS = {
@@ -96,6 +100,8 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'corsheaders.middleware.CorsMiddleware',
+
+    # 'graphql_jwt.middleware.JSONWebTokenMiddleware',
 ]
 
 CORS_ORIGIN_ALLOW_ALL=True
@@ -263,4 +269,4 @@ MEDIA_ROOT = (root - 1)('media')
 
 AUTH_USER_MODEL='polls.User'
 
-TOKEN_SERIALIZER='polls.serializers.TokenSerializer'
+TOKEN_SERIALIZER='polls.TokenSerializer'

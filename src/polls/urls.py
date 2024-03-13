@@ -8,6 +8,8 @@ from django.urls import path
 
 from .twilio.views import TwilioHandler
 from . import views
+from graphene_django.views import GraphQLView
+from .schema import schema
 
 __app_name__ = 'polls'
 
@@ -20,6 +22,7 @@ urlpatterns = [
     path("auth/user/", UserDetailsView.as_view(), name="rest_user_details"),
     path("auth/get-details/", UserDetailAPI.as_view()),
     path('auth/register/', RegisterUserAPIView.as_view()),
+    path("graphql", GraphQLView.as_view(graphiql=True, schema=schema)),
 
     url(r'^get_ip_login_required$', get_ip_login_required),
     url(r'^get_ip_permission_required$', get_ip_permission_required),
@@ -27,4 +30,5 @@ urlpatterns = [
     url(r'^createTask$', TwilioHandler.as_view()),
     url(r'^upload_video$', views.file_upload, name="upload_video"),
     # url(r'^v1/', include(router.urls)),
+
 ]
