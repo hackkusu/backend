@@ -20,7 +20,16 @@ class TwilioService:
             sms_conversation.save()
 
         # todo: check if ongoing conversation
-        sms_conversation = SmsConversation.objects.filter(phone_number=data.get('From')).first()
+        sms_conversation: SmsConversation = SmsConversation.objects.filter(phone_number=data.get('From')).first()
+
+        if sms_conversation is not None:
+            if sms_conversation.last_survey_question_id is not None:
+                next_survey_question = sms_conversation.survery.survey_questions.filter(sort_order=sms_conversation.last_survey_question.sort_order + 1).first()
+            else:
+                next_survey_question = sms_conversation.survery.survey_questions.filter(sort_order=0).first()
+
+            # todo: sentiment analysis and save survey response
+
 
 
         # todo: decide what to text them back
