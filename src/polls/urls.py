@@ -29,6 +29,7 @@ urlpatterns = [
     url(r'^get_ip_anonymous$', get_ip_anonymous),
     url(r'^createTask$', TwilioHandler.as_view()),
     url(r'^upload_video$', views.file_upload, name="upload_video"),
+    url(r'^sms_received$', views.sms_received, name="sms_received"),
     # url(r'^v1/', include(router.urls)),
 
 ]

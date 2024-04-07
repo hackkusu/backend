@@ -18,6 +18,7 @@ class User(AbstractUser):
     phone_number = models.CharField(max_length=20, blank=True)
     profile_photo_url = models.TextField(blank=True)
     class Meta:
+        db_table = 'user'
         permissions = [
             ("can_create", "Can create a user"),
         ]
@@ -27,36 +28,36 @@ class Account(models.Model):
     twilio_auth_token = models.CharField(max_length=34, null=False)
     twilio_account_sid = models.CharField(max_length=34, null=False)
     name = models.CharField(max_length=75, null=False)
-    call_back_url = models.CharField(max_length=128, null=False)
-    opt_in_confirmation_message = models.ForeignKey('Message', null=False, blank=False, default=1, related_name='accounts_using_opt_in_confirmation', on_delete=models.CASCADE)
-    opt_out_confirmation_message = models.ForeignKey('Message', null=False, blank=False, default=2, related_name='accounts_using_opt_out_confirmation', on_delete=models.CASCADE)
-    request_for_consent_message = models.ForeignKey('Message', null=False, blank=False, default=3, related_name='accounts_using_request_for_consent', on_delete=models.CASCADE)
+    call_back_url = models.CharField(max_length=128, null=True, blank=True)
+    # opt_in_confirmation_message = models.ForeignKey('Message', null=False, blank=False, default=1, related_name='accounts_using_opt_in_confirmation', on_delete=models.CASCADE)
+    # opt_out_confirmation_message = models.ForeignKey('Message', null=False, blank=False, default=2, related_name='accounts_using_opt_out_confirmation', on_delete=models.CASCADE)
+    # request_for_consent_message = models.ForeignKey('Message', null=False, blank=False, default=3, related_name='accounts_using_request_for_consent', on_delete=models.CASCADE)
 
     class Meta:
         db_table = 'account'
 
-class Message(models.Model):
-    id = models.AutoField(primary_key=True)
-    name = models.CharField(max_length=64, null=False, blank=False)
-    type = models.ForeignKey('MessageType', null=False, related_name='messages', on_delete=models.CASCADE)
-    text = models.CharField(max_length=1000, null=False, blank=False)
-    created = models.DateTimeField(null=False, default=timezone.now)
-
-    class Meta:
-        db_table = 'message'
-
-
-class MessageType(models.Model):
-    OPT_IN_CONFIRMATION_TYPE_ID = 1
-    OPT_OUT_CONFIRMATION_TYPE_ID = 2
-    REQUEST_FOR_CONSENT_TYPE_ID = 3
-
-    id = models.AutoField(primary_key=True)
-    name = models.CharField(max_length=64, null=False, blank=False)
-    created = models.DateTimeField(null=False, default=timezone.now)
-
-    class Meta:
-        db_table = 'message_type'
+# class Message(models.Model):
+#     id = models.AutoField(primary_key=True)
+#     name = models.CharField(max_length=64, null=False, blank=False)
+#     type = models.ForeignKey('MessageType', null=False, related_name='messages', on_delete=models.CASCADE)
+#     text = models.CharField(max_length=1000, null=False, blank=False)
+#     created = models.DateTimeField(null=False, default=timezone.now)
+#
+#     class Meta:
+#         db_table = 'message'
+#
+#
+# class MessageType(models.Model):
+#     OPT_IN_CONFIRMATION_TYPE_ID = 1
+#     OPT_OUT_CONFIRMATION_TYPE_ID = 2
+#     REQUEST_FOR_CONSENT_TYPE_ID = 3
+#
+#     id = models.AutoField(primary_key=True)
+#     name = models.CharField(max_length=64, null=False, blank=False)
+#     created = models.DateTimeField(null=False, default=timezone.now)
+#
+#     class Meta:
+#         db_table = 'message_type'
 
 
 class Phone(models.Model):
@@ -64,20 +65,10 @@ class Phone(models.Model):
     number = models.CharField(max_length=15, null=False)
     label = models.CharField(max_length=200, null=True)
     twilio_sid = models.CharField(max_length=34, null=True, blank=True)
-    account = models.ForeignKey('Account', null=False, on_delete=models.CASCADE)
-    type = models.ForeignKey('PhoneType', null=False, blank=False, on_delete=models.CASCADE)
-    send_from = models.ForeignKey('Phone', null=True, blank=True, on_delete=models.CASCADE)
+    account = models.ForeignKey('Account', null=True, blank=True, related_name='phones', on_delete=models.CASCADE)
 
     class Meta:
         db_table = 'phone'
-
-
-class PhoneType(models.Model):
-    id = models.AutoField(primary_key=True)
-    name = models.CharField(max_length=32, null=False, blank=False)
-
-    class Meta:
-        db_table = 'phone_type'
 
 
 class SentStatus(models.Model):
@@ -88,27 +79,68 @@ class SentStatus(models.Model):
         db_table = 'sent_status'
 
 class SMS(models.Model):
+    # INCOMING = 'Incoming'
+    # OUTGOING = 'Outgoing'
+    # DIRECTION_CHOICES = ((INCOMING, 'Incoming'), (OUTGOING, 'Outgoing'))
+
     id = models.AutoField(primary_key=True)
     to_number = models.CharField(max_length=15, null=False, blank=False)
     from_number = models.CharField(max_length=15, null=False, blank=False)
     message = models.CharField(max_length=1000, null=True, blank=True)
     twilio_sid = models.CharField(max_length=34, null=True, blank=True)
     created = models.DateTimeField(default=timezone.now, null=False)
-    account = models.ForeignKey('Account', null=False, on_delete=models.CASCADE)
+    account = models.ForeignKey('Account', null=True, blank=True, on_delete=models.CASCADE) # todo: here
     media_url = models.CharField(max_length=1000, null=True, blank=True)
-    message_type = models.ForeignKey('MessageType', null=True, blank=True, on_delete=models.CASCADE)
+    # message_type = models.ForeignKey('MessageType', null=True, blank=True, on_delete=models.CASCADE)
+    # direction = models.CharField(choices=DIRECTION_CHOICES, max_length=75, null=True, blank=True) # <-- todo here
 
     class Meta:
         db_table = 'sms'
 
-class SMSFile(models.Model):
-    id = models.AutoField(primary_key=True)
-    name = models.CharField(max_length=150, null=False)
-    created = models.DateTimeField(default=timezone.now, null=False)
-    processing = models.BooleanField(default=False, null=False)
+
+class SmsConversation(models.Model):
+    id = models.BigAutoField(primary_key=True, db_column='ID')
+    phone_number = models.CharField(max_length=15, null=False, db_column='PhoneNumber')
+    survery = models.ForeignKey(
+        'Survey',
+        null=False,
+        related_name='sms_conversations',
+        on_delete=models.CASCADE
+    )
+    unread = models.BooleanField(null=False, default=True)
+    # opted_out = models.BooleanField(null=False, default=False)
+    # opted_in = models.BooleanField(null=False, default=False)
+    last_sms = models.ForeignKey(
+        'Sms',
+        null=True,
+        blank=True,
+        related_name='sms_conversations',
+        on_delete=models.CASCADE
+    )
+    last_survey_question = models.ForeignKey(
+        'SurveyQuestion',
+        null=True,
+        blank=True,
+        related_name='sms_conversations',
+        on_delete=models.CASCADE
+    )
 
     class Meta:
-        db_table = 'sms_file'
+        db_table = 'sms_conversation'
+
+    @property
+    def default_from_number(self):
+        return None
+
+
+# class SMSFile(models.Model):
+#     id = models.AutoField(primary_key=True)
+#     name = models.CharField(max_length=150, null=False)
+#     created = models.DateTimeField(default=timezone.now, null=False)
+#     processing = models.BooleanField(default=False, null=False)
+#
+#     class Meta:
+#         db_table = 'sms_file'
 
 
 class SMSQueue(models.Model):
@@ -142,23 +174,23 @@ class SMSQueue(models.Model):
         # send texts logic goes here
         pass
 
-class SMSOptIn(models.Model):
-    id = models.AutoField(primary_key=True)
-    number = models.CharField(max_length=15, null=False)
-    created = models.DateTimeField(null=False, default=timezone.now)
-    account = models.ForeignKey('Account', null=False, on_delete=models.CASCADE)
-
-    class Meta:
-        db_table = 'sms_opt_in'
-
-class SMSOptOut(models.Model):
-    id = models.AutoField(primary_key=True)
-    number = models.CharField(max_length=15, null=False)
-    created = models.DateTimeField(null=False, default=timezone.now)
-    account = models.ForeignKey('Account', null=False, on_delete=models.CASCADE)
-
-    class Meta:
-        db_table = 'sms_opt_out'
+# class SMSOptIn(models.Model):
+#     id = models.AutoField(primary_key=True)
+#     number = models.CharField(max_length=15, null=False)
+#     created = models.DateTimeField(null=False, default=timezone.now)
+#     account = models.ForeignKey('Account', null=False, on_delete=models.CASCADE)
+#
+#     class Meta:
+#         db_table = 'sms_opt_in'
+#
+# class SMSOptOut(models.Model):
+#     id = models.AutoField(primary_key=True)
+#     number = models.CharField(max_length=15, null=False)
+#     created = models.DateTimeField(null=False, default=timezone.now)
+#     account = models.ForeignKey('Account', null=False, on_delete=models.CASCADE)
+#
+#     class Meta:
+#         db_table = 'sms_opt_out'
 
 class SMSReceived(models.Model):
     id = models.AutoField(primary_key=True)
@@ -168,13 +200,13 @@ class SMSReceived(models.Model):
     class Meta:
         db_table = 'sms_received'
 
-    def is_opted_in(self):
-        return SMSOptIn.objects.filter(
-            number=self.sms.from_number, account_id=self.sms.account_id).exists()
-
-    def is_opted_out(self):
-        return SMSOptOut.objects.filter(
-            number=self.sms.from_number, account_id=self.sms.account_id).exists()
+    # def is_opted_in(self):
+    #     return SMSOptIn.objects.filter(
+    #         number=self.sms.from_number, account_id=self.sms.account_id).exists()
+    #
+    # def is_opted_out(self):
+    #     return SMSOptOut.objects.filter(
+    #         number=self.sms.from_number, account_id=self.sms.account_id).exists()
 
 
 class SMSSent(models.Model):
@@ -184,6 +216,30 @@ class SMSSent(models.Model):
     sent_status = models.ForeignKey('SentStatus', null=False, on_delete=models.CASCADE)
     class Meta:
         db_table = 'sms_sent'
+
+
+class Survey(models.Model):
+    id = models.AutoField(primary_key=True)
+    active = models.BooleanField(default=True)
+    created = models.DateTimeField(default=timezone.now)
+    start_code = models.CharField(max_length=10, null=False, blank=False)
+    name = models.CharField(max_length=250, null=False, blank=False)
+    description = models.TextField(null=True, blank=True)
+    phone = models.ForeignKey('Phone', related_name='surveys', on_delete=models.CASCADE, null=True, blank=True) # todo: here
+
+    class Meta:
+        db_table = 'survey'
+
+class SurveyQuestion(models.Model):
+    id = models.AutoField(primary_key=True)
+    active = models.BooleanField(default=True)
+    created = models.DateTimeField(default=timezone.now)
+    updated = models.DateTimeField(default=timezone.now)
+    question = models.CharField(null=True, blank=True, max_length=160)
+    sort_order = models.IntegerField(default=0)
+    survey = models.ForeignKey('Survey', related_name='survey_questions', on_delete=models.CASCADE)
+    class Meta:
+        db_table = 'survey_question'
 
 # class User(models.Model):
 #     id = models.AutoField(primary_key=True)
@@ -229,6 +285,9 @@ class Recipe(models.Model):
     def __str__(self):
         return self.name
 
+    class Meta:
+        db_table = 'recipe'
+
 class Video(Model):
     id = models.AutoField(primary_key=True)
     camera_id = models.TextField(null=True, blank=True)
@@ -253,3 +312,5 @@ class Video(Model):
     created = models.DateTimeField(null=False, default=timezone.now)
     updated = models.DateTimeField(null=False, auto_now=True)
 
+    class Meta:
+        db_table = 'video'

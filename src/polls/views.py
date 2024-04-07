@@ -21,7 +21,7 @@ from rest_framework import generics
 from django.contrib.auth import get_user_model
 
 from django.contrib.auth.decorators import login_required, user_passes_test, permission_required
-from django.http import HttpRequest, HttpResponse, HttpResponseBadRequest
+from django.http import HttpRequest, HttpResponse, HttpResponseBadRequest, QueryDict
 from django.middleware.csrf import get_token
 from django.views.decorators.cache import never_cache
 from django.views.decorators.csrf import csrf_exempt
@@ -30,6 +30,9 @@ from django.views.decorators.http import require_http_methods
 from .services.helper.service import HelperService
 
 import environ
+
+from .services.twilio.service import TwilioService
+
 root = environ.Path(__file__) - 2
 BASE_DIR = root()
 
@@ -42,6 +45,15 @@ from google.cloud import storage
 import os
 
 
+@never_cache
+@csrf_exempt
+@require_http_methods(["POST"])
+def sms_received(request: HttpRequest, *args, **kwargs) -> HttpResponse:
+    data = QueryDict(request.body)
+
+    TwilioService.process_inbound_message(data)
+
+    return HttpResponse(None, status=201)
 
 @never_cache
 @csrf_exempt
