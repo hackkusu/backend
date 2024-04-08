@@ -1,3 +1,4 @@
+from django.conf import settings
 from django.urls import include, path
 from django.views.generic import TemplateView
 from rest_framework.authtoken.views import obtain_auth_token
@@ -10,6 +11,7 @@ from .twilio.views import TwilioHandler
 from . import views
 from graphene_django.views import GraphQLView
 from .schema import schema
+from django.conf.urls.static import static
 
 __app_name__ = 'polls'
 
@@ -32,4 +34,4 @@ urlpatterns = [
     url(r'^sms_received$', views.sms_received, name="sms_received"),
     # url(r'^v1/', include(router.urls)),
 
-]
+] # + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
