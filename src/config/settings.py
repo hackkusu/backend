@@ -256,7 +256,12 @@ AWS_VIDEO_USER_SECRET_ACCESS_KEY = '' # env('AWS_SECRET_ACCESS_KEY')
 # AWS_S3_BUCKET_AUTH_STATIC = False
 #
 STATIC_URL = '/static/'
-STATIC_ROOT = (root - 2)('static')
+STATIC_ROOT = (root - 1)('static')
+
+STATICFILES_DIRS = [
+    BASE_DIR / "static",
+    "/var/www/static/",
+]
 
 # PROJECT_ROOT = os.path.normpath(os.path.dirname(__file__))
 # STATIC_ROOT = os.path.join(PROJECT_ROOT, 'static')
