@@ -1,4 +1,4 @@
-from ...models import Survey, SmsConversation, SMS, SMSReceived, Account, SurveyQuestion
+from ...models import Survey, SmsConversation, SMS, SMSReceived, Account, SurveyResponse, SurveyQuestion
 import os
 from twilio.rest import Client
 from twilio.request_validator import RequestValidator
@@ -59,6 +59,9 @@ class TwilioService:
 
 
             # todo: sentiment analysis and save survey response
+
+            # survey_response = SurveyResponse()
+
 
             # todo: decide what to text them back
             response_msg = next_survey_question.question

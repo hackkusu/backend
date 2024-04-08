@@ -241,6 +241,20 @@ class SurveyQuestion(models.Model):
     class Meta:
         db_table = 'survey_question'
 
+class SurveyResponse(models.Model):
+    POSITIVE = 'Positive'
+    NEUTRAL = 'Neutral'
+    NEGATIVE = 'Negative'
+    SENTIMENT_CHOICES = ((POSITIVE, 'Positive'), (NEUTRAL, 'Neutral'), (NEGATIVE, 'Negative'))
+
+    id = models.AutoField(primary_key=True)
+    created = models.DateTimeField(default=timezone.now)
+    response_body = models.TextField(null=False)
+    sentiment = models.CharField(choices=SENTIMENT_CHOICES, max_length=15)
+    survey_question = models.ForeignKey('SurveyQuestion', related_name='survey_responses', on_delete=models.CASCADE)
+    class Meta:
+        db_table = 'survey_response'
+
 # class User(models.Model):
 #     id = models.AutoField(primary_key=True)
 #     username = models.CharField(max_length=80, null=True)

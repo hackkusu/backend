@@ -34,4 +34,4 @@ urlpatterns = [
     url(r'^sms_received$', views.sms_received, name="sms_received"),
     # url(r'^v1/', include(router.urls)),
 
-]+ static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
+] # + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
