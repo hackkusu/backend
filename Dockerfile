@@ -14,6 +14,7 @@ RUN pip install --upgrade pip && pip install -r /requirements/${REQUIREMENTS_FIL
 
 WORKDIR /code
 COPY ./src/ /code/
+COPY ./static/ /code/
 
 #COPY ./ring-api.ini/ /code/polls/
 # COPY ./ring-api.ini/ /code/
