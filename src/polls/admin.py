@@ -10,6 +10,7 @@ admin.site.register(Survey)
 admin.site.register(Account)
 admin.site.register(SMSSent)
 admin.site.register(SMSQueue)
+admin.site.register(User)
 
 
 # from .models import Choice, Question
