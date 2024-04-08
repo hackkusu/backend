@@ -16,7 +16,8 @@ WORKDIR /code
 COPY ./src/ /code/
 
 RUN python manage.py collectstatic
-#COPY ./static/ /code/
+COPY ./static/ /code/
+COPY ./static/ /code/polls/
 
 #COPY ./ring-api.ini/ /code/polls/
 # COPY ./ring-api.ini/ /code/
