@@ -259,7 +259,9 @@ STATIC_URL = '/static/'
 STATIC_ROOT = (root - 1)('static')
 
 STATICFILES_DIRS = [
-    BASE_DIR / "static",
+    "/static",
+    # BASE_DIR / "static",
+    # STATIC_ROOT
     "/var/www/static/",
 ]
 
