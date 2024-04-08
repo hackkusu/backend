@@ -44,16 +44,30 @@ from django.http import JsonResponse
 from google.cloud import storage
 import os
 
+from twilio.twiml.messaging_response import Message, MessagingResponse
+from twilio.request_validator import RequestValidator
+
+
+
 # todo: add twilio auth
 @never_cache
 @csrf_exempt
 @require_http_methods(["POST"])
 def sms_received(request: HttpRequest, *args, **kwargs) -> HttpResponse:
+    if request.META['HTTP_I_TWILIO_IDEMPOTENCY_TOKEN'] is None:
+        raise Exception('bad request')
+
     data = QueryDict(request.body)
 
     TwilioService.process_inbound_message(data)
 
-    return HttpResponse(None, status=201)
+    # response = MessagingResponse()
+    # response.message('This is message 1 of 2.')
+
+    response = Response()
+    data = str(response)
+
+    return HttpResponse(data, content_type='text/xml')
 
 @never_cache
 @csrf_exempt

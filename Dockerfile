@@ -15,6 +15,10 @@ RUN pip install --upgrade pip && pip install -r /requirements/${REQUIREMENTS_FIL
 WORKDIR /code
 COPY ./src/ /code/
 
+#RUN python manage.py collectstatic
+#COPY ./src/static/ /static
+#COPY src/static/ /code/polls/
+
 #COPY ./ring-api.ini/ /code/polls/
 # COPY ./ring-api.ini/ /code/
 #COPY ./test_token.cache/ /code/polls/
