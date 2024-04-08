@@ -1,9 +1,15 @@
 from django.contrib import admin
-from .models import User, SMS, Phone
+from .models import User, SMS, Phone, SmsConversation,SMSReceived,SurveyQuestion,Survey,Account,SMSSent,SMSQueue
 
 admin.site.register(Phone)
 admin.site.register(SMS)
-admin.site.register(User)
+admin.site.register(SmsConversation)
+admin.site.register(SMSReceived)
+admin.site.register(SurveyQuestion)
+admin.site.register(Survey)
+admin.site.register(Account)
+admin.site.register(SMSSent)
+admin.site.register(SMSQueue)
 
 
 # from .models import Choice, Question
