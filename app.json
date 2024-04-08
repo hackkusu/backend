@@ -1,5 +1,5 @@
 {
-  "name": "heroku-s3-sync",
+  "name": "hackkusu-backend",
   "addons": [
         {
           "plan": "heroku-postgresql:mini",
@@ -17,7 +17,14 @@
     }
   },
   "env": {
-    "HEROKU_DEPLOY": true
+    "DEBUG": {
+      "description": "This lets it know whether it should be deployed in debug mode, allowing you to see some of the routes, etc (i.e. not as secure if set to True)",
+      "value": "False"
+    },
+    "HEROKU_DEPLOY": {
+      "description": "This lets it know that it should point to the heroku generated database when deployed",
+      "value": "True"
+    }
   },
   "stack": "container"
 }
