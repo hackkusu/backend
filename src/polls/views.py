@@ -10,19 +10,18 @@ import uuid
 import pytz
 import requests
 from django.conf import settings
+from django_ratelimit.decorators import ratelimit
 
 from rest_framework.permissions import AllowAny
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from .serializers import UserSerializer,RegisterSerializer
-from django.contrib.auth.models import User
 from rest_framework.authentication import TokenAuthentication
 from rest_framework import generics
-
-
 from django.contrib.auth import get_user_model
+
 from django.contrib.auth.decorators import login_required, user_passes_test, permission_required
-from django.http import HttpRequest, HttpResponse, HttpResponseBadRequest
+from django.http import HttpRequest, HttpResponse, HttpResponseBadRequest, QueryDict
 from django.middleware.csrf import get_token
 from django.views.decorators.cache import never_cache
 from django.views.decorators.csrf import csrf_exempt
@@ -31,6 +30,9 @@ from django.views.decorators.http import require_http_methods
 from .services.helper.service import HelperService
 
 import environ
+
+from .services.twilio.service import TwilioService
+
 root = environ.Path(__file__) - 2
 BASE_DIR = root()
 
@@ -42,16 +44,42 @@ from django.http import JsonResponse
 from google.cloud import storage
 import os
 
+# todo: add twilio auth
+@never_cache
+@csrf_exempt
+@require_http_methods(["POST"])
+def sms_received(request: HttpRequest, *args, **kwargs) -> HttpResponse:
+    data = QueryDict(request.body)
 
+    TwilioService.process_inbound_message(data)
+
+    return HttpResponse(None, status=201)
 
 @never_cache
 @csrf_exempt
 @require_http_methods(["GET"])
-def get_ip(request: HttpRequest, *args, **kwargs) -> HttpResponse:
+def get_ip_anonymous(request: HttpRequest, *args, **kwargs) -> HttpResponse:
 
     print(HelperService().get_ip_address(request))
     return HttpResponse(HelperService.get_ip_address(request), status=200)
 
+@login_required
+@never_cache
+@csrf_exempt
+@require_http_methods(["GET"])
+def get_ip_login_required(request: HttpRequest, *args, **kwargs) -> HttpResponse:
+
+    print(HelperService().get_ip_address(request))
+    return HttpResponse(HelperService.get_ip_address(request), status=200)
+
+@never_cache
+@csrf_exempt
+@require_http_methods(["GET"])
+@permission_required('polls.can_create', raise_exception=True)
+def get_ip_permission_required(request: HttpRequest, *args, **kwargs) -> HttpResponse:
+
+    print(HelperService().get_ip_address(request))
+    return HttpResponse(HelperService.get_ip_address(request), status=200)
 
 # Class based view to Get User Details using Token Authentication
 class UserDetailAPI(APIView):
@@ -66,3 +94,82 @@ class UserDetailAPI(APIView):
 class RegisterUserAPIView(generics.CreateAPIView):
   permission_classes = (AllowAny,)
   serializer_class = RegisterSerializer
+
+
+@csrf_exempt
+@permission_required('polls.can_create', raise_exception=True)
+@ratelimit(key='user_or_ip', rate='2/30s')
+@ratelimit(key='user_or_ip', rate='25/10m')
+@ratelimit(key='user_or_ip', rate='2900/d')
+@require_http_methods(["POST"])
+def file_upload(request):
+    if request.method == 'POST' and request.FILES['file']:
+        file = request.FILES['file']
+        created = datetime.datetime.utcnow()
+        bucket_name = '00-zoot-video-queue'
+        est = pytz.timezone('America/Denver')
+        my_uuid = str(uuid.uuid4())
+        filename = file.name
+        # filename = my_uuid + '_' + file.name
+        filepath = 'uploads/' + filename
+        # filepath = 'uploads/' + my_uuid + '_' + filename
+        external_id = filename
+        path1 = created.astimezone(est).strftime("%Y/%m/%d")
+        url = 'https://storage.cloud.google.com/00-zoot-video-queue/' + filepath
+
+        # sync_event = SyncEvent(external_id=external_id, pending=True, source=SyncEvent.UPLOAD)
+        #
+        # try:
+        #     sync_event.save()
+        # except Exception as err:
+        #     print('{} Error - {} - {}'.format(SyncEvent.UPLOAD, str(external_id), str(err)))
+        #     error_model = SyncError(external_id=sync_event.external_id, error_msg=str(err),
+        #                             type=SyncError.PARSE_ERROR_TYPE)
+        #     error_model.save()
+        #     sync_event.pending = False
+        #     sync_event.success = False
+        #     sync_event.save()
+        #     return JsonResponse({'status': 'error', 'message': str(err)})
+        #
+        # try:
+        #     # Google Cloud Storage setup
+        #     os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = os.path.join(BASE_DIR, 'security-videos-346723-1ef9efdefc15.json')
+        #     client = storage.Client()
+        #     bucket = client.get_bucket('00-zoot-video-queue')
+        #
+        #     # Upload the file
+        #     blob = bucket.blob('uploads/' + file.name)
+        #     # blob = bucket.blob('uploads/' + my_uuid + '_' + file.name)
+        #     # blob = bucket.blob('uploads/' + request.user.username + '/' + str(uuid.uuid4()) + '_' + file.name)
+        #     blob.upload_from_file(file)
+        # except Exception as err:
+        #     print('{} Error - {} - {}'.format(SyncEvent.UPLOAD, str(external_id), str(err)))
+        #     error_model = SyncError(external_id=sync_event.external_id, error_msg=str(err),
+        #                             type=SyncError.UPLOAD_ERROR)
+        #     error_model.save()
+        #     sync_event.pending = False
+        #     sync_event.success = False
+        #     sync_event.save()
+        #     return JsonResponse({'status': 'error', 'message': str(err)})
+        #
+        #
+        # video_model = Video(video_date=created,
+        #                     video_date_local=created.astimezone(est),
+        #                     video_id=external_id,
+        #                     # video_type=video_type,
+        #                     # kind=kind,
+        #                     source_url=url,
+        #                     bucket_name=bucket_name,
+        #                     filepath=filepath,
+        #                     filename=filename,
+        #                     # raw=json.dumps(video, default=str, indent=4, sort_keys=True),
+        #                     sync=sync_event,
+        #                     user_id=request.user.id
+        #                     )
+        #
+        # video_model.save()
+
+        return JsonResponse({'status': 'success', 'message': 'File uploaded successfully', 'externalId': external_id, 'syncEventId': sync_event.id })
+    else:
+        return JsonResponse({'status': 'error', 'message': 'No file uploaded'})
+

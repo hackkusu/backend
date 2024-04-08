@@ -24,3 +24,7 @@ django-allauth
 dj-rest-auth[with_social]==4.0.0
 django-storages[google]
 google-api-python-client
+
+graphene-django
+django-graphql-jwt
+django-filter
