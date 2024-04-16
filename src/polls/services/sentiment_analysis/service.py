@@ -4,7 +4,6 @@ import re
 from nltk.tokenize import word_tokenize, pos_tag
 from nltk.corpus import stopwords
 import nltk
-
 class SentimentAnalysisService:
     def __init__(self):
         nltk.download('vader_lexicon', quiet=True)
