@@ -46,8 +46,17 @@ import os
 
 from twilio.twiml.messaging_response import Message, MessagingResponse
 from twilio.request_validator import RequestValidator
+from .models import SMS, SurveyResponse
 
+@never_cache
+@csrf_exempt
+@require_http_methods(["GET"])
+def calculate_aspects(request: HttpRequest, *args, **kwargs) -> HttpResponse:
+    all_responses = list(SurveyResponse.objects.all())
 
+    #to do top message for each sentiment in json load database with fake info
+
+    return HttpResponse(None, status=200)
 
 # todo: add twilio auth
 @never_cache
@@ -59,7 +68,10 @@ def sms_received(request: HttpRequest, *args, **kwargs) -> HttpResponse:
 
     data = QueryDict(request.body)
 
-    TwilioService.process_inbound_message(data)
+    try:
+        TwilioService.process_inbound_message(data)
+    except Exception as e:
+        print(str(e))
 
     # response = MessagingResponse()
     # response.message('This is message 1 of 2.')

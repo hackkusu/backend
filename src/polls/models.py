@@ -250,6 +250,7 @@ class SurveyResponse(models.Model):
     id = models.AutoField(primary_key=True)
     created = models.DateTimeField(default=timezone.now)
     response_body = models.TextField(null=False)
+    aspects = models.TextField(null=False, default='none')
     sentiment = models.CharField(choices=SENTIMENT_CHOICES, max_length=15)
     survey_question = models.ForeignKey('SurveyQuestion', related_name='survey_responses', on_delete=models.CASCADE)
     class Meta:

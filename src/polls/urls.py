@@ -7,7 +7,7 @@ from django.conf.urls import include, url
 from dj_rest_auth.views import LoginView, LogoutView, UserDetailsView
 from django.urls import path
 
-from .twilio.views import TwilioHandler
+# from .twilio.views import TwilioHandler
 from . import views
 from graphene_django.views import GraphQLView
 from .schema import schema
@@ -29,9 +29,10 @@ urlpatterns = [
     url(r'^get_ip_login_required$', get_ip_login_required),
     url(r'^get_ip_permission_required$', get_ip_permission_required),
     url(r'^get_ip_anonymous$', get_ip_anonymous),
-    url(r'^createTask$', TwilioHandler.as_view()),
+    # url(r'^createTask$', TwilioHandler.as_view()),
     url(r'^upload_video$', views.file_upload, name="upload_video"),
     url(r'^sms_received$', views.sms_received, name="sms_received"),
+    url(r'^calculate_all_aspects$', views.calculate_aspects, name="calculate_all_aspects"),
     # url(r'^v1/', include(router.urls)),
 
 ] # + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)

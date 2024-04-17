@@ -1,7 +1,7 @@
 from ...models import Survey, SmsConversation, SMS, SMSReceived, Account, SurveyResponse, SurveyQuestion
 from nltk.sentiment import SentimentIntensityAnalyzer
 import re
-from nltk.tokenize import word_tokenize, pos_tag
+from nltk import word_tokenize, pos_tag
 from nltk.corpus import stopwords
 import nltk
 class SentimentAnalysisService:
@@ -9,6 +9,7 @@ class SentimentAnalysisService:
         nltk.download('vader_lexicon', quiet=True)
         nltk.download('punkt', quiet=True)
         nltk.download('averaged_perceptron_tagger', quiet=True)
+        nltk.download('stopwords')
         self.analyzer = SentimentIntensityAnalyzer()
         self.stop_words = set(stopwords.words('english'))
 
@@ -17,25 +18,16 @@ class SentimentAnalysisService:
         cleaned_text = re.sub(r'[^a-zA-Z0-9\s]', '', text)
         return cleaned_text.lower()
 
-    def analyze_sentiment_on_survey_response(self, sms_list, sms: SMS, sms_conversation: SmsConversation, survey_question: SurveyQuestion):
-        sentiment_response = sms_list[0].body if len(sms_list) > 0 else ""
-        aspect_response = sms_list[1].body if len(sms_list) > 1 else ""
-        additional_information = sms_list[2].body if len(sms_list) > 2 else ""
 
-        # Clean responses
-        sentiment_response_clean = self.clean_text(sentiment_response)
-        aspect_response_clean = self.clean_text(aspect_response)
-
-        # Analyze sentiment
-        sentiment = self.analyze_sentiment(sentiment_response_clean)
-
-        # Extract aspects
-        aspects = self.extract_aspects(aspect_response_clean)
+    def analyze_sentiment_on_survey_response(self, sms_list, current_sms: SMS, sms_conversation: SmsConversation, survey_question: SurveyQuestion):
+        current_sms_clean = self.clean_text(current_sms.message)
+        current_sms_sentiment = self.analyze_sentiment(current_sms_clean)
+        current_sms_aspects = self.extract_aspects(current_sms_clean)
 
         # Save additional information to the database
-        self.save_additional_info(survey_question, additional_information, sentiment)
+        sms_response = self.save_additional_info(survey_question, current_sms_clean, current_sms_sentiment, current_sms_aspects)
 
-        return sentiment, aspects
+        return sms_response
 
     def analyze_sentiment(self, text):
         score = self.analyzer.polarity_scores(text)['compound']
@@ -53,15 +45,19 @@ class SentimentAnalysisService:
         nouns = [word for word, tag in tagged_tokens if tag.startswith("NN")]
         return ", ".join(nouns)
 
-    def save_additional_info(self, survey_question, info, sentiment):
+    def save_additional_info(self, survey_question, full_response, sentiment, aspects):
+        response = None
         # Implement database interaction for saving additional information
         try:
             response = SurveyResponse.objects.create(
                 survey_question=survey_question,
-                response_body=info,
-                sentiment=sentiment
+                response_body=full_response,
+                sentiment=sentiment,
+                aspects=aspects
             )
             response.save()
             print("Additional information saved successfully.")
         except Exception as e:
             print(f"Failed to save additional information: {e}")
+
+        return response
