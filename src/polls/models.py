@@ -66,6 +66,7 @@ class Phone(models.Model):
     label = models.CharField(max_length=200, null=True)
     twilio_sid = models.CharField(max_length=34, null=True, blank=True)
     account = models.ForeignKey('Account', null=True, blank=True, related_name='phones', on_delete=models.CASCADE)
+    user = models.ForeignKey('User', related_name='phones', on_delete=models.CASCADE, null=True, blank=True)
 
     class Meta:
         db_table = 'phone'
@@ -226,6 +227,7 @@ class Survey(models.Model):
     name = models.CharField(max_length=250, null=False, blank=False)
     description = models.TextField(null=True, blank=True)
     phone = models.ForeignKey('Phone', related_name='surveys', on_delete=models.CASCADE, null=True, blank=True) # todo: here
+    user = models.ForeignKey('User', related_name='surveys', on_delete=models.CASCADE, null=True, blank=True)
 
     class Meta:
         db_table = 'survey'
