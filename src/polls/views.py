@@ -11,6 +11,7 @@ import pytz
 import requests
 from django.conf import settings
 from django_ratelimit.decorators import ratelimit
+from collections import Counter
 
 from rest_framework.permissions import AllowAny
 from rest_framework.views import APIView
@@ -48,15 +49,52 @@ from twilio.twiml.messaging_response import Message, MessagingResponse
 from twilio.request_validator import RequestValidator
 from .models import SMS, SurveyResponse
 
+
 @never_cache
 @csrf_exempt
 @require_http_methods(["GET"])
 def calculate_aspects(request: HttpRequest, *args, **kwargs) -> HttpResponse:
+    # Fetch all responses
     all_responses = list(SurveyResponse.objects.all())
 
-    #to do top message for each sentiment in json load database with fake info
+    # Collect all aspects into a list
+    all_aspects = []
+    for response in all_responses:
+        aspects_list = response.aspects.split(", ")
+        all_aspects.extend(aspects_list)
 
-    return HttpResponse(None, status=200)
+    # Count occurrences of each aspect
+    aspect_counts = Counter(all_aspects)
+
+    # Find the top 5 aspects
+    top_five_aspects = [aspect for aspect, count in aspect_counts.most_common(5)]
+
+    # Find the most representative message for each sentiment
+    sentiment_results = {}
+    for sentiment in [SurveyResponse.POSITIVE, SurveyResponse.NEUTRAL, SurveyResponse.NEGATIVE]:
+        max_count = 0
+        best_response = None
+        for response in all_responses:
+            if response.sentiment == sentiment:
+                current_aspects = set(response.aspects.split(", "))
+                top_aspect_count = sum(aspect in current_aspects for aspect in top_five_aspects)
+                if top_aspect_count > max_count:
+                    max_count = top_aspect_count
+                    best_response = response.response_body
+
+        sentiment_results[sentiment] = best_response or "No response found"
+
+    # Create a JSON response
+    json_data = json.dumps({
+        "top_aspects": top_five_aspects,
+        "messages": {
+            "Positive": sentiment_results[SurveyResponse.POSITIVE],
+            "Neutral": sentiment_results[SurveyResponse.NEUTRAL],
+            "Negative": sentiment_results[SurveyResponse.NEGATIVE]
+        }
+    })
+    ip_address = HelperService.get_ip_address(request)
+    return HttpResponse(f"IP: {ip_address}, Data: {json_data}", status=200)
 
 # todo: add twilio auth
 @never_cache
