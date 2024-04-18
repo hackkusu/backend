@@ -15,9 +15,18 @@ from django.conf.urls.static import static
 
 __app_name__ = 'polls'
 
-from .views import UserDetailAPI, RegisterUserAPIView, get_ip_anonymous, get_ip_login_required, get_ip_permission_required
+from .views import UserDetailAPI, RegisterUserAPIView, get_ip_anonymous, get_ip_login_required, \
+    get_ip_permission_required, SurveyViewSet, PhoneViewSet
+
+from rest_framework.routers import DefaultRouter
+
+router = DefaultRouter()
+router.register(r'phone', PhoneViewSet, basename='phone')
+router.register(r'survey', SurveyViewSet, basename='survey')
+
 
 urlpatterns = [
+    path('v1/', include(router.urls)),
     # path('auth/', include('polls.authentication.urls')),
     path("auth/login/", LoginView.as_view(), name="rest_login"),
     path("auth/logout/", LogoutView.as_view(), name="rest_logout"),
