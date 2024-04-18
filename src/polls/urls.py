@@ -21,8 +21,8 @@ from .views import UserDetailAPI, RegisterUserAPIView, get_ip_anonymous, get_ip_
 from rest_framework.routers import DefaultRouter
 
 router = DefaultRouter()
-router.register(r'phone', PhoneViewSet, basename='phone')
-router.register(r'survey', SurveyViewSet, basename='survey')
+router.register(r'phones', PhoneViewSet, basename='phones')
+router.register(r'surveys', SurveyViewSet, basename='surveys')
 
 
 urlpatterns = [

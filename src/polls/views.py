@@ -197,11 +197,11 @@ class PhoneViewSet(viewsets.ModelViewSet):
     # permission_classes = [TokenPresent]
 
     def get_queryset(self):
-        user_id = self.request.headers.get('X-User-ID')
+        user_id = self.request.user.id
         return Phone.objects.filter(user_id=user_id)
 
     def perform_create(self, serializer):
-        user_id = self.request.data.get('user_id')
+        user_id = self.request.user.id
         serializer.save(user_id=user_id)
 
 
@@ -209,7 +209,7 @@ class PhoneViewSet(viewsets.ModelViewSet):
         partial = kwargs.pop('partial', False)
         instance = self.get_object()
 
-        request_user_id = request.data.get('user_id') or request.headers.get('X-User-ID')
+        request_user_id = self.request.user.id
         if instance.user_id != request_user_id:
             return Response({"detail": "You do not have permission to update this entry."}, status=status.HTTP_403_FORBIDDEN)
 
@@ -218,7 +218,7 @@ class PhoneViewSet(viewsets.ModelViewSet):
     def destroy(self, request, *args, **kwargs):
         if 'Authorization' not in request.headers:
             return Response({'detail': 'Authorization header is missing'}, status=status.HTTP_401_UNAUTHORIZED)
-        request_user_id = request.headers.get('X-User-ID')
+        request_user_id = self.request.user.id
         instance = self.get_object()
         if instance.user_id != request_user_id:
             raise PermissionDenied({'detail': 'You do not have permission to delete this entry.'})
