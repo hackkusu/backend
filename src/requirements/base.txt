@@ -28,3 +28,4 @@ graphene-django
 django-graphql-jwt
 django-filter
 nltk
+pusher

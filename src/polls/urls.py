@@ -41,7 +41,9 @@ urlpatterns = [
     # url(r'^createTask$', TwilioHandler.as_view()),
     url(r'^upload_video$', views.file_upload, name="upload_video"),
     url(r'^sms_received$', views.sms_received, name="sms_received"),
-    url(r'^calculate_all_aspects$', views.calculate_aspects, name="calculate_all_aspects"),
+    url(r'^get_responses_over_time$', views.get_responses_over_time, name="get_responses_over_time"),
+    url(r'^get_sentiment_overview$', views.get_sentiment_overview, name="get_sentiment_overview"),
+    url(r'^get_highlight_responses$', views.get_highlight_responses, name="get_highlight_responses"),
     # url(r'^v1/', include(router.urls)),
 
 ] # + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)

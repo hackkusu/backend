@@ -24,6 +24,30 @@
     "HEROKU_DEPLOY": {
       "description": "This lets it know that it should point to the heroku generated database when deployed",
       "value": "True"
+    },
+    "SECRET_KEY": {
+      "description": "This is the secret key used by django",
+      "value": "kdsfjkfdsjdfskjfjdsakjkfljlfjsdk"
+    },
+    "ALLOWED_HOSTS": {
+      "description": "This is the allowed hosts in the settings.py file",
+      "value": "*"
+    },
+    "PUSHER_APP_ID": {
+      "description": "This is used to configure the pusher websockets support. Signup at pusher.com. AppId defines the app.",
+      "value": ""
+    },
+    "PUSHER_KEY": {
+      "description": "This is used to configure the pusher websockets support. Signup at pusher.com. PusherKey defines the account.",
+      "value": ""
+    },
+    "PUSHER_SECRET": {
+      "description": "This is used to configure the pusher websockets support. Signup at pusher.com. PusherSecret defines you have access to the account.",
+      "value": ""
+    },
+    "PUSHER_CLUSTER": {
+      "description": "This is used to configure the pusher websockets support. Signup at pusher.com. PusherCluster defines the cluster location.",
+      "value": "us3"
     }
   },
   "stack": "container"

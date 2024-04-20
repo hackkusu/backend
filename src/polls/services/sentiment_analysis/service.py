@@ -21,22 +21,22 @@ class SentimentAnalysisService:
 
     def analyze_sentiment_on_survey_response(self, sms_list, current_sms: SMS, sms_conversation: SmsConversation, survey_question: SurveyQuestion):
         current_sms_clean = self.clean_text(current_sms.message)
-        current_sms_sentiment = self.analyze_sentiment(current_sms_clean)
+        current_sms_sentiment, score = self.analyze_sentiment(current_sms_clean)
         current_sms_aspects = self.extract_aspects(current_sms_clean)
 
         # Save additional information to the database
-        sms_response = self.save_additional_info(survey_question, current_sms_clean, current_sms_sentiment, current_sms_aspects)
+        sms_response = self.save_additional_info(sms_conversation.survery, survey_question, current_sms_clean, current_sms_sentiment, current_sms_aspects, score)
 
         return sms_response
 
     def analyze_sentiment(self, text):
         score = self.analyzer.polarity_scores(text)['compound']
         if score > 0.05:
-            return SurveyResponse.POSITIVE
+            return SurveyResponse.POSITIVE, score
         elif score < -0.05:
-            return SurveyResponse.NEGATIVE
+            return SurveyResponse.NEGATIVE, score
         else:
-            return SurveyResponse.NEUTRAL
+            return SurveyResponse.NEUTRAL, score
 
     def extract_aspects(self, text):
         tokens = word_tokenize(text)
@@ -45,15 +45,17 @@ class SentimentAnalysisService:
         nouns = [word for word, tag in tagged_tokens if tag.startswith("NN")]
         return ", ".join(nouns)
 
-    def save_additional_info(self, survey_question, full_response, sentiment, aspects):
+    def save_additional_info(self, survey, survey_question, full_response, sentiment, aspects, score):
         response = None
         # Implement database interaction for saving additional information
         try:
             response = SurveyResponse.objects.create(
+                survey=survey,
                 survey_question=survey_question,
                 response_body=full_response,
                 sentiment=sentiment,
-                aspects=aspects
+                aspects=aspects,
+                sentiment_score=score
             )
             response.save()
             print("Additional information saved successfully.")
