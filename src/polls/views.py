@@ -11,6 +11,7 @@ import pytz
 import requests
 from django.conf import settings
 from django_ratelimit.decorators import ratelimit
+from collections import Counter
 from rest_framework.exceptions import PermissionDenied
 
 from rest_framework.permissions import AllowAny
@@ -38,6 +39,10 @@ from .services.twilio.service import TwilioService
 
 from rest_framework import viewsets, status
 
+from django.db.models import Count
+from django.db.models.functions import TruncDay, TruncHour, TruncMinute
+from datetime import timedelta
+
 root = environ.Path(__file__) - 2
 BASE_DIR = root()
 
@@ -51,8 +56,116 @@ import os
 
 from twilio.twiml.messaging_response import Message, MessagingResponse
 from twilio.request_validator import RequestValidator
+from .models import SMS, SurveyResponse
 
 
+@never_cache
+@csrf_exempt
+@require_http_methods(["GET"])
+def get_responses_over_time(request):
+    # Determine the time spread of the latest responses
+    latest_response = SurveyResponse.objects.latest('created').created
+    earliest_response = SurveyResponse.objects.earliest('created').created
+    time_spread = latest_response - earliest_response
+
+    # Choose a truncation based on the time spread
+    if time_spread <= timedelta(hours=1):
+        trunc = TruncMinute
+    elif time_spread <= timedelta(days=1):
+        trunc = TruncHour
+    else:
+        trunc = TruncDay
+
+    # Aggregate the count of positive and negative responses per time unit
+    positive_responses = SurveyResponse.objects.filter(sentiment=SurveyResponse.POSITIVE).annotate(date=trunc('created')).values('date').annotate(count=Count('id')).order_by('date')
+    negative_responses = SurveyResponse.objects.filter(sentiment=SurveyResponse.NEGATIVE).annotate(date=trunc('created')).values('date').annotate(count=Count('id')).order_by('date')
+
+    # Prepare data for the chart
+    pos_data = [{'x': resp['date'].strftime("%Y-%m-%dT%H:%M:%S"), 'y': resp['count']} for resp in positive_responses]
+    neg_data = [{'x': resp['date'].strftime("%Y-%m-%dT%H:%M:%S"), 'y': resp['count']} for resp in negative_responses]
+
+    # React chart expects series data in a specific format
+    series = [
+        {
+            'name': 'Positive Responses Over Time',
+            'data': pos_data
+        },
+        {
+            'name': 'Negative Responses Over Time',
+            'data': neg_data
+        }
+    ]
+
+    return JsonResponse({'series': series})
+
+@never_cache
+@csrf_exempt
+@require_http_methods(["GET"])
+def get_sentiment_overview(request):
+    # Get total counts for each sentiment
+    total_responses = SurveyResponse.objects.count()
+    sentiment_counts = SurveyResponse.objects.values('sentiment').annotate(count=Count('id'))
+
+    # Calculate the percentage of each sentiment
+    sentiment_data = []
+    for sentiment in sentiment_counts:
+        if total_responses > 0:
+            percentage = (sentiment['count'] / total_responses) * 100
+        else:
+            percentage = 0
+        sentiment_data.append({
+            'title': sentiment['sentiment'],
+            'value': round(percentage, 2),  # round to two decimal places for neatness
+            'color': 'success' if sentiment['sentiment'] == 'Positive' else 'danger' if sentiment['sentiment'] == 'Negative' else 'warning'
+        })
+
+    return JsonResponse({'progressbars': sentiment_data})
+
+@never_cache
+@csrf_exempt
+@require_http_methods(["GET"])
+def get_highlight_responses(request: HttpRequest) -> HttpResponse:
+    # Fetch all responses
+    all_responses = SurveyResponse.objects.order_by('-created').all()
+
+    # Collect all aspects into a list
+    all_aspects = []
+    highlight_messages = []
+
+    for response in all_responses:
+        aspects_list = response.aspects.split(", ")
+        all_aspects.extend(aspects_list)
+        highlight_messages.append({
+            'created': response.created.strftime("%Y-%m-%d %H:%M:%S"),  # Format date as needed
+            'message': response.response_body,
+            'sentiment': response.sentiment,
+        })
+
+    # Count occurrences of each aspect
+    aspect_counts = Counter(all_aspects)
+
+    # Find the top 5 aspects
+    top_five_aspects = [aspect for aspect, count in aspect_counts.most_common(5)]
+
+    # Simplify the message collection to just the most representative per sentiment
+    sentiment_results = {}
+    for sentiment in [SurveyResponse.POSITIVE, SurveyResponse.NEUTRAL, SurveyResponse.NEGATIVE]:
+        sentiment_messages = [message for message in highlight_messages if message['sentiment'] == sentiment]
+        if sentiment_messages:
+            sentiment_results[sentiment] = sentiment_messages[0]  # Taking the most recent message
+        else:
+            sentiment_results[sentiment] = {
+                'created': 'No date found',
+                'message': 'No response found',
+            }
+
+    # Create a JSON response
+    response_data = {
+        "top_aspects": top_five_aspects,
+        "messages": sentiment_results
+    }
+
+    return JsonResponse(response_data)
 
 # todo: add twilio auth
 @never_cache
@@ -64,7 +177,10 @@ def sms_received(request: HttpRequest, *args, **kwargs) -> HttpResponse:
 
     data = QueryDict(request.body)
 
-    TwilioService.process_inbound_message(data)
+    try:
+        TwilioService.process_inbound_message(data)
+    except Exception as e:
+        print(str(e))
 
     # response = MessagingResponse()
     # response.message('This is message 1 of 2.')

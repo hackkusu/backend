@@ -1,6 +1,6 @@
 # Create your models here.
 import uuid
-
+import pusher
 from django.db.models import Model
 from django.contrib.auth.models import AbstractUser
 from django.db import models
@@ -16,6 +16,9 @@ from django.db import models
 
 # from storages.backends.gcloud import GoogleCloudStorage
 # storage = GoogleCloudStorage()
+
+from django.db.models.signals import post_save
+from django.dispatch import receiver
 
 class Achievement(models.Model):
     id = models.AutoField(primary_key=True)
@@ -264,11 +267,30 @@ class SurveyResponse(models.Model):
     id = models.AutoField(primary_key=True)
     created = models.DateTimeField(default=timezone.now)
     response_body = models.TextField(null=False)
+    aspects = models.TextField(null=False, default='none')
     sentiment = models.CharField(choices=SENTIMENT_CHOICES, max_length=15)
+    survey = models.ForeignKey('Survey', related_name='survey_responses', on_delete=models.CASCADE, null=True, blank=True)
     survey_question = models.ForeignKey('SurveyQuestion', related_name='survey_responses', on_delete=models.CASCADE)
+    sentiment_score = models.DecimalField(null=True, blank=True, decimal_places=4, max_digits=5)
+
     class Meta:
         db_table = 'survey_response'
 
+@receiver(post_save, sender=SurveyResponse)
+def broadcast_update(sender, instance, created, **kwargs):
+    if created:
+        pusher_client = pusher.Pusher(
+            app_id=settings.PUSHER_APP_ID,
+            key=settings.PUSHER_KEY,
+            secret=settings.PUSHER_SECRET,
+            cluster=settings.PUSHER_CLUSTER,
+            ssl=True
+        )
+
+        pusher_client.trigger('survey-response-channel', 'new-response', {
+            'message': 'A new response was added.'
+            # You can send more data as needed
+        })
 
 # class User(models.Model):
 #     id = models.AutoField(primary_key=True)
