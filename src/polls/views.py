@@ -10,6 +10,7 @@ import uuid
 import pytz
 import requests
 from django.conf import settings
+from django.views import View
 from django_ratelimit.decorators import ratelimit
 from collections import Counter
 from rest_framework.exceptions import PermissionDenied
@@ -57,7 +58,15 @@ import os
 from twilio.twiml.messaging_response import Message, MessagingResponse
 from twilio.request_validator import RequestValidator
 from .models import SMS, SurveyResponse
+from .bll.qr.create_qr_bll import QRCodeBll
 
+class QRCodeView(View):
+    def get(self, request, *args, **kwargs):
+        phone_number = request.GET.get('phone_number', '4352131896')  # or however you're passing the phone number
+        start_code = request.GET.get('start_code', 'start')  # or however you're passing the phone number
+        buffer = QRCodeBll.generate_and_return_bytes_buffer_qr_code(phone_number, start_code)
+        # Return an HTTP response with the image and the correct MIME type
+        return HttpResponse(buffer.getvalue(), content_type='image/png')
 
 @never_cache
 @csrf_exempt

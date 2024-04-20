@@ -16,7 +16,7 @@ from django.conf.urls.static import static
 __app_name__ = 'polls'
 
 from .views import UserDetailAPI, RegisterUserAPIView, get_ip_anonymous, get_ip_login_required, \
-    get_ip_permission_required, SurveyViewSet, PhoneViewSet
+    get_ip_permission_required, SurveyViewSet, PhoneViewSet, QRCodeView
 
 from rest_framework.routers import DefaultRouter
 
@@ -44,6 +44,7 @@ urlpatterns = [
     url(r'^get_responses_over_time$', views.get_responses_over_time, name="get_responses_over_time"),
     url(r'^get_sentiment_overview$', views.get_sentiment_overview, name="get_sentiment_overview"),
     url(r'^get_highlight_responses$', views.get_highlight_responses, name="get_highlight_responses"),
+    url(r'^generate_qr_code$', QRCodeView.as_view()),
     # url(r'^v1/', include(router.urls)),
 
 ] # + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)

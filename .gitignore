@@ -12,3 +12,5 @@ src/.env
 venv*
 
 __pycache__/
+
+qr_code_*

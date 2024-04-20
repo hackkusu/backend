@@ -20,7 +20,7 @@ class PhoneSerializer(serializers.ModelSerializer):
 class SurveySerializer(serializers.ModelSerializer):
     class Meta:
         model = Survey
-        fields = ['id', 'active', 'created', 'start_code', 'name', 'description', 'phone_id', 'user_id']
+        fields = ['id', 'active', 'created', 'start_code', 'name', 'description', 'phone', 'user_id', 'qr_code_url']
 
 
 #Serializer to Get User Details using Django Token Authentication

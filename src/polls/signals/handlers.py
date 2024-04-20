@@ -16,5 +16,8 @@ from ..models import Survey
 @receiver(pre_save, sender=Survey)
 def update_dependent_field(sender, instance, **kwargs):
     if not instance.qr_code_url:
-        url = QRCodeBll.generate_qr_code(instance.phone.number)
-        instance.qr_code_url = url
+        try:
+            url = QRCodeBll.generate_and_save_qr_code(instance.phone.number, instance.start_code)
+            instance.qr_code_url = url
+        except Exception as e:
+            pass
