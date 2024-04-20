@@ -12,11 +12,14 @@ import requests
 from django.conf import settings
 from django_ratelimit.decorators import ratelimit
 from collections import Counter
+from rest_framework.exceptions import PermissionDenied
 
 from rest_framework.permissions import AllowAny
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from .serializers import UserSerializer,RegisterSerializer
+
+from .models import Survey, Phone
+from .serializers import UserSerializer, RegisterSerializer, SurveySerializer, PhoneSerializer
 from rest_framework.authentication import TokenAuthentication
 from rest_framework import generics
 from django.contrib.auth import get_user_model
@@ -33,6 +36,8 @@ from .services.helper.service import HelperService
 import environ
 
 from .services.twilio.service import TwilioService
+
+from rest_framework import viewsets, status
 
 root = environ.Path(__file__) - 2
 BASE_DIR = root()
@@ -237,3 +242,71 @@ def file_upload(request):
     else:
         return JsonResponse({'status': 'error', 'message': 'No file uploaded'})
 
+class PhoneViewSet(viewsets.ModelViewSet):
+    serializer_class = PhoneSerializer
+    # permission_classes = [TokenPresent]
+
+    def get_queryset(self):
+        user_id = self.request.user.id
+        return Phone.objects.filter(user_id=user_id)
+
+    def perform_create(self, serializer):
+        user_id = self.request.user.id
+        serializer.save(user_id=user_id)
+
+
+    def update(self, request, *args, **kwargs):
+        partial = kwargs.pop('partial', False)
+        instance = self.get_object()
+
+        request_user_id = self.request.user.id
+        if instance.user_id != request_user_id:
+            return Response({"detail": "You do not have permission to update this entry."}, status=status.HTTP_403_FORBIDDEN)
+
+        return super(PhoneViewSet, self).update(request, *args, **kwargs)
+
+    def destroy(self, request, *args, **kwargs):
+        if 'Authorization' not in request.headers:
+            return Response({'detail': 'Authorization header is missing'}, status=status.HTTP_401_UNAUTHORIZED)
+        request_user_id = self.request.user.id
+        instance = self.get_object()
+        if instance.user_id != request_user_id:
+            raise PermissionDenied({'detail': 'You do not have permission to delete this entry.'})
+
+        response = super(PhoneViewSet, self).destroy(request, *args, **kwargs)
+        return response
+
+class SurveyViewSet(viewsets.ModelViewSet):
+    serializer_class = SurveySerializer
+    # permission_classes = [TokenPresent]
+
+    def get_queryset(self):
+        # user_id = self.request.headers.get('X-User-ID')
+        # return Survey.objects.all()
+        return Survey.objects.filter(user_id=self.request.user.id)
+
+    def perform_create(self, serializer):
+        user_id = self.request.user.id
+        serializer.save(user_id=user_id)
+
+
+    def update(self, request, *args, **kwargs):
+        partial = kwargs.pop('partial', False)
+        instance = self.get_object()
+
+        request_user_id = self.request.user.id
+        if instance.user_id != request_user_id:
+            return Response({"detail": "You do not have permission to update this entry."}, status=status.HTTP_403_FORBIDDEN)
+
+        return super(SurveyViewSet, self).update(request, *args, **kwargs)
+
+    def destroy(self, request, *args, **kwargs):
+        if 'Authorization' not in request.headers:
+            return Response({'detail': 'Authorization header is missing'}, status=status.HTTP_401_UNAUTHORIZED)
+        request_user_id = self.request.user.id
+        instance = self.get_object()
+        if instance.user_id != request_user_id:
+            raise PermissionDenied({'detail': 'You do not have permission to delete this entry.'})
+
+        response = super(SurveyViewSet, self).destroy(request, *args, **kwargs)
+        return response
