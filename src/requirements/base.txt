@@ -4,7 +4,6 @@ django-cors-headers
 django-environ==0.4.5
 djangorestframework==3.9.2
 twilio==6.35.5
-uwsgi
 bcrypt==3.1.2
 celery==4.0.2
 cryptography
@@ -28,3 +27,5 @@ google-api-python-client
 graphene-django
 django-graphql-jwt
 django-filter
+nltk
+pusher

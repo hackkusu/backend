@@ -26,6 +26,11 @@ DEBUG = env.bool('DEBUG', default=True)
 HEROKU_DEPLOY = env.bool('HEROKU_DEPLOY', default=False)
 ALLOWED_HOSTS = env.list('ALLOWED_HOSTS', default=['*'])
 
+PUSHER_APP_ID = env('PUSHER_APP_ID')
+PUSHER_KEY = env('PUSHER_KEY')
+PUSHER_SECRET = env('PUSHER_SECRET')
+PUSHER_CLUSTER = env('PUSHER_CLUSTER')
+
 
 LOCAL = [
     'django_extensions',
