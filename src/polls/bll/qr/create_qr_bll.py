@@ -14,4 +14,4 @@ class QRCodeBll:
 
         # Generate QR code
         qr = qrcode.make(qr_content)
-        qr.save('my_qr_code.png')
+        qr.save('qr_code_' + phone_number + '.png')
