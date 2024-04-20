@@ -1,4 +1,6 @@
 # Create your models here.
+import uuid
+
 from django.db.models import Model
 from django.contrib.auth.models import AbstractUser
 from django.db import models
@@ -13,15 +15,18 @@ from django.db import models
 # from storages.backends.gcloud import GoogleCloudStorage
 # storage = GoogleCloudStorage()
 
+class Achievement(models.Model):
+    id = models.AutoField(primary_key=True)
+    name = models.CharField(max_length=150, null=False)
+    description = models.TextField(null=False)
+    icon = models.CharField(max_length=250, null=False)
+    level = models.IntegerField(null=False, default=1)
+    required_prior_achievement = models.ForeignKey('Achievement', related_name='prior_achievements', null=True, blank=True, on_delete=models.CASCADE)
+    created = models.DateTimeField(default=timezone.now, null=False)
+    active = models.BooleanField(default=True, null=False)
 
-class User(AbstractUser):
-    phone_number = models.CharField(max_length=20, blank=True)
-    profile_photo_url = models.TextField(blank=True)
     class Meta:
-        db_table = 'user'
-        permissions = [
-            ("can_create", "Can create a user"),
-        ]
+        db_table = 'achievement'
 
 class Account(models.Model):
     id = models.AutoField(primary_key=True)
@@ -218,12 +223,14 @@ class SMSSent(models.Model):
     class Meta:
         db_table = 'sms_sent'
 
+def generate_partial_uuid():
+    return str(uuid.uuid4())[:5]
 
 class Survey(models.Model):
     id = models.AutoField(primary_key=True)
     active = models.BooleanField(default=True)
     created = models.DateTimeField(default=timezone.now)
-    start_code = models.CharField(max_length=10, null=False, blank=False)
+    start_code = models.CharField(max_length=10, null=False, blank=False, default=generate_partial_uuid)
     name = models.CharField(max_length=250, null=False, blank=False)
     description = models.TextField(null=True, blank=True)
     phone = models.ForeignKey('Phone', related_name='surveys', on_delete=models.CASCADE, null=True, blank=True) # todo: here
@@ -231,6 +238,7 @@ class Survey(models.Model):
 
     class Meta:
         db_table = 'survey'
+        unique_together = ('start_code', 'phone')
 
 class SurveyQuestion(models.Model):
     id = models.AutoField(primary_key=True)
@@ -257,6 +265,7 @@ class SurveyResponse(models.Model):
     class Meta:
         db_table = 'survey_response'
 
+
 # class User(models.Model):
 #     id = models.AutoField(primary_key=True)
 #     username = models.CharField(max_length=80, null=True)
@@ -281,11 +290,33 @@ class SurveyResponse(models.Model):
 #         return self.active
 
 
+class User(AbstractUser):
+    phone_number = models.CharField(max_length=20, blank=True)
+    profile_photo_url = models.TextField(blank=True)
+
+    class Meta:
+        db_table = 'user'
+        permissions = [
+            ("can_create", "Can create a user"),
+        ]
+
+class UserAchievement(models.Model):
+    id = models.AutoField(primary_key=True)
+    score = models.IntegerField(null=True, blank=True, default=1)
+    user = models.ForeignKey('User', related_name='user_achievements', null=False, on_delete=models.CASCADE)
+    achievement = models.ForeignKey('Achievement', related_name='user_achievements', null=False, on_delete=models.CASCADE)
+    achieved_on = models.DateTimeField(default=timezone.now, null=False)
+
+    class Meta:
+        db_table = 'user_achievement'
+        unique_together = ('user', 'achievement')
 
 
-
-
-
+class UserProfile(models.Model):
+    id = models.AutoField(primary_key=True)
+    user = models.ForeignKey('User', related_name='user_profiles', null=False, on_delete=models.CASCADE, unique=True)
+    dark_mode = models.BooleanField(null=True, blank=True, default=True)
+    profile_photo_url = models.TextField(blank=True, null=True)
 
 
 
