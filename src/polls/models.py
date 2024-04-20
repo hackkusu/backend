@@ -12,6 +12,8 @@ from django.utils import timezone
 
 from django.contrib.auth.models import AbstractUser, User as AuthUser
 from django.db import models
+
+
 # from storages.backends.gcloud import GoogleCloudStorage
 # storage = GoogleCloudStorage()
 
@@ -235,10 +237,12 @@ class Survey(models.Model):
     description = models.TextField(null=True, blank=True)
     phone = models.ForeignKey('Phone', related_name='surveys', on_delete=models.CASCADE, null=True, blank=True) # todo: here
     user = models.ForeignKey('User', related_name='surveys', on_delete=models.CASCADE, null=True, blank=True)
+    qr_code_url = models.TextField(null=True, blank=True)
 
     class Meta:
         db_table = 'survey'
         unique_together = ('start_code', 'phone')
+
 
 class SurveyQuestion(models.Model):
     id = models.AutoField(primary_key=True)
