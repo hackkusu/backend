@@ -32,6 +32,9 @@ from django.views.decorators.cache import never_cache
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_http_methods
 
+import humanize
+from datetime import datetime
+
 from .services.helper.service import HelperService
 
 import environ
@@ -195,6 +198,64 @@ def get_highlight_responses(request: HttpRequest) -> HttpResponse:
     }
 
     return JsonResponse(response_data)
+
+@never_cache
+@csrf_exempt
+@require_http_methods(["GET"])
+def calculate_aspects(request: HttpRequest, *args, **kwargs) -> HttpResponse:
+    # Fetch all responses
+    all_responses = list(SurveyResponse.objects.all().order_by('-created'))
+
+    # Collect all aspects into a list
+    all_aspects = []
+    for response in all_responses:
+        aspects_list = response.aspects.split(", ")
+        all_aspects.extend(aspects_list)
+
+    # Count occurrences of each aspect
+    aspect_counts = Counter(all_aspects)
+
+    # Find the top 5 aspects
+    top_five_aspects = [aspect for aspect, count in aspect_counts.most_common(5)]
+
+    # Find the most representative message for each sentiment
+    sentiment_results = {}
+    for sentiment in [SurveyResponse.POSITIVE, SurveyResponse.NEUTRAL, SurveyResponse.NEGATIVE]:
+        max_count = 0
+        best_response = None
+        best_response_time = None
+        for response in all_responses:
+            if response.sentiment == sentiment:
+                current_aspects = set(response.aspects.split(", "))
+                top_aspect_count = sum(aspect in current_aspects for aspect in top_five_aspects)
+                if top_aspect_count > max_count:
+                    max_count = top_aspect_count
+                    best_response = response.response_body
+                    now = datetime.now(response.created.tzinfo)
+                    best_response_time = humanize.naturaltime(now - response.created)
+
+        sentiment_results[sentiment] = {
+            'created': best_response_time,
+            'message': best_response or "No response found",
+            'sentiment': sentiment
+        }
+
+        # sentiment_results[sentiment] = {
+        #     'created': response.created.strftime("%Y-%m-%d %H:%M:%S"),
+        #     'message': best_response or "No response found",
+        #     'sentiment': sentiment
+        # }
+
+    # Create a JSON response
+    return JsonResponse({
+        "top_aspects": top_five_aspects,
+        "messages": sentiment_results
+        # "messages": {
+        #     "Positive": sentiment_results[SurveyResponse.POSITIVE]['message'],
+        #     "Neutral": sentiment_results[SurveyResponse.NEUTRAL]['message'],
+        #     "Negative": sentiment_results[SurveyResponse.NEGATIVE]['message']
+        # }
+    })
 
 # todo: add twilio auth
 @never_cache

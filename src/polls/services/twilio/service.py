@@ -70,11 +70,11 @@ class TwilioService:
                                                 next_survey_question.question,
                                                 data.get('To'), data.get('From'))
 
-                return TwilioService.send_outgoing_sms(account, "Text in as many times as you'd like then send \"done\" by itself when you are finished with each question.", data.get('To'), data.get('From'))
+                return TwilioService.send_outgoing_sms(account, "Text in as many times as you'd like then send \"done\" by itself when you are finished.", data.get('To'), data.get('From'))
                 # send text as many times as you'd like and send done by itself when complete
             else:
                 return TwilioService.send_outgoing_sms(account,
-                                                       'To start a survey, please text us the START code you received.',
+                                                       'To start a survey, please text us the unique START code you received. Text STOP to be permanetely unsubscribed.',
                                                        data.get('To'), data.get('From'))
 
         if conversation is not None:

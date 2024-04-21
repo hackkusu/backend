@@ -31,3 +31,4 @@ nltk
 pusher
 Pillow==9.5.0
 django-ratelimit
+humanize
