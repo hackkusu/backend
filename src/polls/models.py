@@ -108,40 +108,60 @@ class SMS(models.Model):
         db_table = 'sms'
 
 
-class SmsConversation(models.Model):
+class Conversation(models.Model):
     id = models.BigAutoField(primary_key=True, db_column='ID')
     phone_number = models.CharField(max_length=15, null=False, db_column='PhoneNumber')
     survery = models.ForeignKey(
         'Survey',
         null=False,
-        related_name='sms_conversations',
+        related_name='conversations',
         on_delete=models.CASCADE
     )
     unread = models.BooleanField(null=False, default=True)
+    created = models.DateTimeField(default=timezone.now, null=False)
     # opted_out = models.BooleanField(null=False, default=False)
     # opted_in = models.BooleanField(null=False, default=False)
     last_sms = models.ForeignKey(
         'Sms',
         null=True,
         blank=True,
-        related_name='sms_conversations',
+        related_name='conversations',
         on_delete=models.CASCADE
     )
     last_survey_question = models.ForeignKey(
         'SurveyQuestion',
         null=True,
         blank=True,
-        related_name='sms_conversations',
+        related_name='conversations',
         on_delete=models.CASCADE
     )
+    closed = models.BooleanField(null=False, default=False)
 
     class Meta:
-        db_table = 'sms_conversation'
+        db_table = 'conversation'
 
     @property
     def default_from_number(self):
         return None
 
+class SmsConversation(models.Model):
+    id = models.BigAutoField(primary_key=True, db_column='ID')
+    sms = models.ForeignKey(
+        'Sms',
+        null=False,
+        related_name='sms_conversations',
+        on_delete=models.CASCADE
+    )
+    conversation = models.ForeignKey(
+        'Conversation',
+        null=False,
+        related_name='sms_conversations',
+        on_delete=models.CASCADE
+    )
+    created = models.DateTimeField(default=timezone.now, null=False)
+    class Meta:
+        db_table = 'sms_conversation'
+        unique_together = ('sms', 'conversation')
 
 # class SMSFile(models.Model):
 #     id = models.AutoField(primary_key=True)
@@ -328,9 +348,12 @@ class User(AbstractUser):
 class UserAchievement(models.Model):
     id = models.AutoField(primary_key=True)
     score = models.IntegerField(null=True, blank=True, default=1)
+    percent_complete = models.IntegerField(null=True, blank=True, default=0)
     user = models.ForeignKey('User', related_name='user_achievements', null=False, on_delete=models.CASCADE)
     achievement = models.ForeignKey('Achievement', related_name='user_achievements', null=False, on_delete=models.CASCADE)
-    achieved_on = models.DateTimeField(default=timezone.now, null=False)
+    completed_on = models.DateTimeField(null=True, blank=True)
+    completed = models.BooleanField(default=False)
+    created = models.DateTimeField(default=timezone.now, null=False)
 
     class Meta:
         db_table = 'user_achievement'
