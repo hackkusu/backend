@@ -29,3 +29,4 @@ django-graphql-jwt
 django-filter
 nltk
 pusher
+pillow

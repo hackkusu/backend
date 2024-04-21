@@ -89,9 +89,28 @@ def get_responses_over_time(request):
     positive_responses = SurveyResponse.objects.filter(sentiment=SurveyResponse.POSITIVE).annotate(date=trunc('created')).values('date').annotate(count=Count('id')).order_by('date')
     negative_responses = SurveyResponse.objects.filter(sentiment=SurveyResponse.NEGATIVE).annotate(date=trunc('created')).values('date').annotate(count=Count('id')).order_by('date')
 
-    # Prepare data for the chart
+    # Ensure the data series end at the same time
+    if positive_responses and negative_responses:
+        last_positive_timestamp = positive_responses.last()['date']
+        last_negative_timestamp = negative_responses.last()['date']
+        latest_timestamp = max(last_positive_timestamp, last_negative_timestamp).strftime("%Y-%m-%dT%H:%M:%S")
+    else:
+        latest_timestamp = latest_response.strftime("%Y-%m-%dT%H:%M:%S")
+
     pos_data = [{'x': resp['date'].strftime("%Y-%m-%dT%H:%M:%S"), 'y': resp['count']} for resp in positive_responses]
     neg_data = [{'x': resp['date'].strftime("%Y-%m-%dT%H:%M:%S"), 'y': resp['count']} for resp in negative_responses]
+
+    # Append a zero value if the last timestamp of either sentiment doesn't match the latest timestamp
+    if positive_responses and (positive_responses.last()['date'].strftime("%Y-%m-%dT%H:%M:%S") != latest_timestamp):
+        pos_data.append({'x': latest_timestamp, 'y': 0})
+    if negative_responses and (negative_responses.last()['date'].strftime("%Y-%m-%dT%H:%M:%S") != latest_timestamp):
+        neg_data.append({'x': latest_timestamp, 'y': 0})
+
+    # If there are no responses for either sentiment, append at least one data point to zero
+    if not positive_responses:
+        pos_data.append({'x': latest_timestamp, 'y': 0})
+    if not negative_responses:
+        neg_data.append({'x': latest_timestamp, 'y': 0})
 
     # React chart expects series data in a specific format
     series = [
@@ -106,6 +125,7 @@ def get_responses_over_time(request):
     ]
 
     return JsonResponse({'series': series})
+
 
 @never_cache
 @csrf_exempt
