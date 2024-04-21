@@ -81,13 +81,12 @@ class Phone(models.Model):
     class Meta:
         db_table = 'phone'
 
-
-class SentStatus(models.Model):
-    id = models.AutoField(primary_key=True)
-    name = models.CharField(max_length=20, null=False, blank=False)
-
-    class Meta:
-        db_table = 'sent_status'
+# class SentStatus(models.Model):
+#     id = models.AutoField(primary_key=True)
+#     name = models.CharField(max_length=20, null=False, blank=False)
+#
+#     class Meta:
+#         db_table = 'sent_status'
 
 class SMS(models.Model):
     # INCOMING = 'Incoming'
@@ -224,7 +223,7 @@ class SMSSent(models.Model):
     id = models.AutoField(primary_key=True)
     time_sent = models.DateTimeField(default=timezone.now, null=True, blank=True)
     sms = models.ForeignKey('SMS', null=False, related_name='sms_sent', on_delete=models.CASCADE)
-    sent_status = models.ForeignKey('SentStatus', null=False, on_delete=models.CASCADE)
+
     class Meta:
         db_table = 'sms_sent'
 

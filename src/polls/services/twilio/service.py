@@ -1,4 +1,4 @@
-from ...models import Survey, SmsConversation, SMS, SMSReceived, Account, SurveyResponse, SurveyQuestion
+from ...models import Survey, SmsConversation, SMS, SMSReceived, Account, SurveyResponse, SurveyQuestion, SMSSent
 import os
 from twilio.rest import Client
 from twilio.request_validator import RequestValidator
@@ -82,6 +82,13 @@ class TwilioService:
                 from_=data.get('To'),
                 to=data.get('From')
             )
+
+            # save sms received
+            sms_out = SMS(from_number=data.get('To'), to_number=data.get('From'),
+                      message=response_msg, account=account, twilio_sid=message.sid)
+            sms_out.save()
+            sms_sent = SMSSent(sms=sms)
+            sms_sent.save()
 
             print(message.sid)
 
