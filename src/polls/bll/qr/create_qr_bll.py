@@ -31,7 +31,7 @@ class QRCodeBll:
 
         # Measure text
         dummy_draw = ImageDraw.Draw(img_qr)
-        text_width, text_height = dummy_draw.textsize('text "' + start_code + '" to', font=font)
+        text_width, text_height = dummy_draw.textsize('text "' + start_code + '" to begin!', font=font)
 
         # Create a new image with space for the text
         canvas = Image.new(
@@ -47,7 +47,7 @@ class QRCodeBll:
 
         # Add text at the bottom
         text_position = ((canvas.size[0] - text_width) // 2, img_qr.size[1] + 10)
-        draw.text(text_position, 'text "' + start_code + '" to', font=font, fill='white')
+        draw.text(text_position, 'text "' + start_code + '" to begin!', font=font, fill='white')
 
         return canvas
 
