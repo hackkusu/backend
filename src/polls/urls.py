@@ -16,13 +16,14 @@ from django.conf.urls.static import static
 __app_name__ = 'polls'
 
 from .views import UserDetailAPI, RegisterUserAPIView, get_ip_anonymous, get_ip_login_required, \
-    get_ip_permission_required, SurveyViewSet, PhoneViewSet, QRCodeView
+    get_ip_permission_required, SurveyViewSet, PhoneViewSet, QRCodeView, SurveyQuestionViewSet
 
 from rest_framework.routers import DefaultRouter
 
 router = DefaultRouter()
 router.register(r'phones', PhoneViewSet, basename='phones')
 router.register(r'surveys', SurveyViewSet, basename='surveys')
+router.register(r'survey_questions', SurveyQuestionViewSet, basename='survey_questions')
 
 
 urlpatterns = [

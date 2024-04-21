@@ -19,8 +19,8 @@ from rest_framework.permissions import AllowAny
 from rest_framework.views import APIView
 from rest_framework.response import Response
 
-from .models import Survey, Phone
-from .serializers import UserSerializer, RegisterSerializer, SurveySerializer, PhoneSerializer
+from .models import Survey, Phone, SurveyQuestion
+from .serializers import UserSerializer, RegisterSerializer, SurveySerializer, PhoneSerializer, SurveyQuestionSerializer
 from rest_framework.authentication import TokenAuthentication
 from rest_framework import generics
 from django.contrib.auth import get_user_model
@@ -404,4 +404,40 @@ class SurveyViewSet(viewsets.ModelViewSet):
             raise PermissionDenied({'detail': 'You do not have permission to delete this entry.'})
 
         response = super(SurveyViewSet, self).destroy(request, *args, **kwargs)
+        return response
+
+
+class SurveyQuestionViewSet(viewsets.ModelViewSet):
+    serializer_class = SurveyQuestionSerializer
+    # permission_classes = [TokenPresent]
+
+    def get_queryset(self):
+        # user_id = self.request.headers.get('X-User-ID')
+        # return Survey.objects.all()
+        return SurveyQuestion.objects.filter(survey__user_id=self.request.user.id)
+
+    def perform_create(self, serializer):
+        # user_id = self.request.user.id
+        serializer.save()
+
+
+    def update(self, request, *args, **kwargs):
+        partial = kwargs.pop('partial', False)
+        instance = self.get_object()
+
+        request_user_id = self.request.user.id
+        if instance.survey.user_id != request_user_id:
+            return Response({"detail": "You do not have permission to update this entry."}, status=status.HTTP_403_FORBIDDEN)
+
+        return super(SurveyQuestionViewSet, self).update(request, *args, **kwargs)
+
+    def destroy(self, request, *args, **kwargs):
+        if 'Authorization' not in request.headers:
+            return Response({'detail': 'Authorization header is missing'}, status=status.HTTP_401_UNAUTHORIZED)
+        request_user_id = self.request.user.id
+        instance = self.get_object()
+        if instance.survey.user_id != request_user_id:
+            raise PermissionDenied({'detail': 'You do not have permission to delete this entry.'})
+
+        response = super(SurveyQuestionViewSet, self).destroy(request, *args, **kwargs)
         return response

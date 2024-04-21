@@ -10,7 +10,7 @@ from django.contrib.auth import get_user_model
 User = get_user_model()
 
 from rest_framework import serializers
-from .models import Survey, Phone
+from .models import Survey, Phone, SurveyQuestion
 
 
 class PhoneSerializer(serializers.ModelSerializer):
@@ -21,7 +21,10 @@ class SurveySerializer(serializers.ModelSerializer):
     class Meta:
         model = Survey
         fields = ['id', 'active', 'created', 'start_code', 'name', 'description', 'phone', 'user_id', 'qr_code_url']
-
+class SurveyQuestionSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = SurveyQuestion
+        fields = ['id', 'active', 'created', 'question', 'sort_order', 'survey']
 
 #Serializer to Get User Details using Django Token Authentication
 class UserSerializer(serializers.ModelSerializer):
