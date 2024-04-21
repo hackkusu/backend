@@ -29,4 +29,4 @@ django-graphql-jwt
 django-filter
 nltk
 pusher
-pillow
+Pillow==9.5.0
