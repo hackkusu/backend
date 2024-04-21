@@ -14,6 +14,8 @@ Sync videos repo
 
 ## Local setup
 
+It should just work if you use the deploy to heroku btn, but here is how you can run it all locally
+
 python==3.8.10
 
 To develop locally create `.env` file within `./src` directory and add following code to it:  
@@ -21,6 +23,10 @@ To develop locally create `.env` file within `./src` directory and add following
 DEBUG=True
 SECRET_KEY=<insert_secret_key_here>
 ALLOWED_HOSTS=*,
+PUSHER_APP_ID=<insert_secret_key_here>
+PUSHER_KEY=<insert_secret_key_here>
+PUSHER_SECRET=<insert_secret_key_here>
+PUSHER_CLUSTER=<insert_secret_key_here>
 ```
 
 Once container is up and running apply migrations (a one-time operation) and create superuser by executing:  
@@ -30,22 +36,57 @@ Once container is up and running apply migrations (a one-time operation) and cre
 `python manage.py createsuperuser` -> to create superuser  
 `exit` -> to exit the container  
 
-Test review app
+
+Test review app locally
 
 ## create db
+first install postgres using brew, install brew first if you don't have it
+
+```shell
+brew install postgresql@14
+brew services start postgresql@14
+```
+run psql and create a new local db
+
+```shell
+psql
+```
+then
 ```shell
 create user polls with password 'test1234' SUPERUSER;
 ```
 ```shell
 create database polls with owner polls;
+\q
 ```
 
+```shell
+cp src/.sampleenv src/.env
+```
+then populate the missing fields in the .env file if you haven't already. 
+
+from here forward you normally work from the ./src directory
+
+```shell
+cd src
+
+```
 
 `. venv/bin/activate` (python 3.9)`
 
-`pip install -r requirements/dev.txt`
+`pip install -r requirements/heroku.txt`
 
-`cd src && python manage.py makemigrations`
+```shell
+python manage.py migrate
+python manage.py loaddata superuser.json
+
+```
+
+if you change a model you got to run this:
+```shell
+python manage.py makemigrations
+python manage.py migrate
+````
 
 
 https://thinkster.io/tutorials/django-json-api/authentication
