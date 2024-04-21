@@ -80,7 +80,14 @@ cd src
 
 `. venv/bin/activate` (python 3.9)`
 
-`pip install -r requirements/heroku.txt`
+install packages
+```
+pip install -r requirements/heroku.txt
+```
+if you have problems with `uwsgi` when installing the packages, then you can try just installing the non release version of the requirements.txt like so:
+```shell
+pip install -r requirements/dev.txt
+```
 
 ```shell
 python manage.py migrate
