@@ -6,6 +6,12 @@
 
 This repo contains Python backend code and configuration files for Heroku. 
 
+The frontend code can be found here:
+https://github.com/hackkusu/frontend
+
+
+References
+
 https://devcenter.heroku.com/articles/heroku-button
 
 https://github.com/app-json/app.json#validating-a-manifest
