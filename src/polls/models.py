@@ -362,7 +362,7 @@ class UserAchievement(models.Model):
 
 class UserProfile(models.Model):
     id = models.AutoField(primary_key=True)
-    user = models.ForeignKey('User', related_name='user_profiles', null=False, on_delete=models.CASCADE, unique=True)
+    user = models.OneToOneField('User', related_name='user_profiles', null=False, on_delete=models.CASCADE)
     dark_mode = models.BooleanField(null=True, blank=True, default=True)
     profile_photo_url = models.TextField(blank=True, null=True)
 
