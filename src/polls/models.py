@@ -314,10 +314,42 @@ def broadcast_update(sender, instance, created, **kwargs):
             'survey_id': instance.survey.id,
             'survey_name': instance.survey.name,
             'survey_start_code': instance.survey.start_code,
-            'phoneNumber': instance.conversation.phone_number
+            'phoneNumber': instance.conversation.phone_number,
+            'response': instance.response_body,
+            'sentiment': instance.sentiment
 
             # You can send more data as needed
         })
+
+        if SurveyResponse.objects.filter(survey=instance.survey).count() == 5:
+            pusher_client.trigger('survey-response-channel', 'new-achievement', {
+                'message': 'New achievement unlocked! Survey Wizard! Keep going!',
+                'survey_id': instance.survey.id,
+                'survey_name': instance.survey.name,
+                'survey_start_code': instance.survey.start_code,
+                'level': 5
+                # You can send more data as needed
+            })
+
+        if SurveyResponse.objects.filter(survey=instance.survey).count() == 10:
+            pusher_client.trigger('survey-response-channel', 'new-achievement', {
+                'message': 'New achievement unlocked!!! You are now a Boss!',
+                'survey_id': instance.survey.id,
+                'survey_name': instance.survey.name,
+                'survey_start_code': instance.survey.start_code,
+                'level': 10
+                # You can send more data as needed
+            })
+
+        if SurveyResponse.objects.filter(survey=instance.survey).count() == 20:
+            pusher_client.trigger('survey-response-channel', 'new-achievement', {
+                'message': 'New achievement unlocked!!! Survey Overlord!!!',
+                'survey_id': instance.survey.id,
+                'survey_name': instance.survey.name,
+                'survey_start_code': instance.survey.start_code,
+                'level': 20
+                # You can send more data as needed
+            })
 
 # class User(models.Model):
 #     id = models.AutoField(primary_key=True)
