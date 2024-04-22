@@ -5,9 +5,12 @@ db.sqlite3
 
 node_modules
 
+src/.env
 .env
 
 .venv
 venv*
 
 __pycache__/
+
+qr_code_*

@@ -10,6 +10,7 @@ import uuid
 import pytz
 import requests
 from django.conf import settings
+from django.views import View
 from django_ratelimit.decorators import ratelimit
 from collections import Counter
 from rest_framework.exceptions import PermissionDenied
@@ -18,8 +19,8 @@ from rest_framework.permissions import AllowAny
 from rest_framework.views import APIView
 from rest_framework.response import Response
 
-from .models import Survey, Phone
-from .serializers import UserSerializer, RegisterSerializer, SurveySerializer, PhoneSerializer
+from .models import Survey, Phone, SurveyQuestion
+from .serializers import UserSerializer, RegisterSerializer, SurveySerializer, PhoneSerializer, SurveyQuestionSerializer
 from rest_framework.authentication import TokenAuthentication
 from rest_framework import generics
 from django.contrib.auth import get_user_model
@@ -30,6 +31,9 @@ from django.middleware.csrf import get_token
 from django.views.decorators.cache import never_cache
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_http_methods
+
+import humanize
+from datetime import datetime
 
 from .services.helper.service import HelperService
 
@@ -57,7 +61,15 @@ import os
 from twilio.twiml.messaging_response import Message, MessagingResponse
 from twilio.request_validator import RequestValidator
 from .models import SMS, SurveyResponse
+from .bll.qr.create_qr_bll import QRCodeBll
 
+class QRCodeView(View):
+    def get(self, request, *args, **kwargs):
+        phone_number = request.GET.get('phone_number', '4352131896')  # or however you're passing the phone number
+        start_code = request.GET.get('start_code', 'start')  # or however you're passing the phone number
+        buffer = QRCodeBll.generate_and_return_bytes_buffer_qr_code(phone_number, start_code)
+        # Return an HTTP response with the image and the correct MIME type
+        return HttpResponse(buffer.getvalue(), content_type='image/png')
 
 @never_cache
 @csrf_exempt
@@ -80,9 +92,28 @@ def get_responses_over_time(request):
     positive_responses = SurveyResponse.objects.filter(sentiment=SurveyResponse.POSITIVE).annotate(date=trunc('created')).values('date').annotate(count=Count('id')).order_by('date')
     negative_responses = SurveyResponse.objects.filter(sentiment=SurveyResponse.NEGATIVE).annotate(date=trunc('created')).values('date').annotate(count=Count('id')).order_by('date')
 
-    # Prepare data for the chart
+    # Ensure the data series end at the same time
+    if positive_responses and negative_responses:
+        last_positive_timestamp = positive_responses.last()['date']
+        last_negative_timestamp = negative_responses.last()['date']
+        latest_timestamp = max(last_positive_timestamp, last_negative_timestamp).strftime("%Y-%m-%dT%H:%M:%S")
+    else:
+        latest_timestamp = latest_response.strftime("%Y-%m-%dT%H:%M:%S")
+
     pos_data = [{'x': resp['date'].strftime("%Y-%m-%dT%H:%M:%S"), 'y': resp['count']} for resp in positive_responses]
     neg_data = [{'x': resp['date'].strftime("%Y-%m-%dT%H:%M:%S"), 'y': resp['count']} for resp in negative_responses]
+
+    # Append a zero value if the last timestamp of either sentiment doesn't match the latest timestamp
+    if positive_responses and (positive_responses.last()['date'].strftime("%Y-%m-%dT%H:%M:%S") != latest_timestamp):
+        pos_data.append({'x': latest_timestamp, 'y': 0})
+    if negative_responses and (negative_responses.last()['date'].strftime("%Y-%m-%dT%H:%M:%S") != latest_timestamp):
+        neg_data.append({'x': latest_timestamp, 'y': 0})
+
+    # If there are no responses for either sentiment, append at least one data point to zero
+    if not positive_responses:
+        pos_data.append({'x': latest_timestamp, 'y': 0})
+    if not negative_responses:
+        neg_data.append({'x': latest_timestamp, 'y': 0})
 
     # React chart expects series data in a specific format
     series = [
@@ -97,6 +128,7 @@ def get_responses_over_time(request):
     ]
 
     return JsonResponse({'series': series})
+
 
 @never_cache
 @csrf_exempt
@@ -166,6 +198,64 @@ def get_highlight_responses(request: HttpRequest) -> HttpResponse:
     }
 
     return JsonResponse(response_data)
+
+@never_cache
+@csrf_exempt
+@require_http_methods(["GET"])
+def calculate_aspects(request: HttpRequest, *args, **kwargs) -> HttpResponse:
+    # Fetch all responses
+    all_responses = list(SurveyResponse.objects.all().order_by('-created'))
+
+    # Collect all aspects into a list
+    all_aspects = []
+    for response in all_responses:
+        aspects_list = response.aspects.split(", ")
+        all_aspects.extend(aspects_list)
+
+    # Count occurrences of each aspect
+    aspect_counts = Counter(all_aspects)
+
+    # Find the top 5 aspects
+    top_five_aspects = [aspect for aspect, count in aspect_counts.most_common(5)]
+
+    # Find the most representative message for each sentiment
+    sentiment_results = {}
+    for sentiment in [SurveyResponse.POSITIVE, SurveyResponse.NEUTRAL, SurveyResponse.NEGATIVE]:
+        max_count = 0
+        best_response = None
+        best_response_time = None
+        for response in all_responses:
+            if response.sentiment == sentiment:
+                current_aspects = set(response.aspects.split(", "))
+                top_aspect_count = sum(aspect in current_aspects for aspect in top_five_aspects)
+                if top_aspect_count > max_count:
+                    max_count = top_aspect_count
+                    best_response = response.response_body
+                    now = datetime.now(response.created.tzinfo)
+                    best_response_time = humanize.naturaltime(now - response.created)
+
+        sentiment_results[sentiment] = {
+            'created': best_response_time,
+            'message': best_response or "No response found",
+            'sentiment': sentiment
+        }
+
+        # sentiment_results[sentiment] = {
+        #     'created': response.created.strftime("%Y-%m-%d %H:%M:%S"),
+        #     'message': best_response or "No response found",
+        #     'sentiment': sentiment
+        # }
+
+    # Create a JSON response
+    return JsonResponse({
+        "top_aspects": top_five_aspects,
+        "messages": sentiment_results
+        # "messages": {
+        #     "Positive": sentiment_results[SurveyResponse.POSITIVE]['message'],
+        #     "Neutral": sentiment_results[SurveyResponse.NEUTRAL]['message'],
+        #     "Negative": sentiment_results[SurveyResponse.NEGATIVE]['message']
+        # }
+    })
 
 # todo: add twilio auth
 @never_cache
@@ -375,4 +465,40 @@ class SurveyViewSet(viewsets.ModelViewSet):
             raise PermissionDenied({'detail': 'You do not have permission to delete this entry.'})
 
         response = super(SurveyViewSet, self).destroy(request, *args, **kwargs)
+        return response
+
+
+class SurveyQuestionViewSet(viewsets.ModelViewSet):
+    serializer_class = SurveyQuestionSerializer
+    # permission_classes = [TokenPresent]
+
+    def get_queryset(self):
+        # user_id = self.request.headers.get('X-User-ID')
+        # return Survey.objects.all()
+        return SurveyQuestion.objects.filter(survey__user_id=self.request.user.id)
+
+    def perform_create(self, serializer):
+        # user_id = self.request.user.id
+        serializer.save()
+
+
+    def update(self, request, *args, **kwargs):
+        partial = kwargs.pop('partial', False)
+        instance = self.get_object()
+
+        request_user_id = self.request.user.id
+        if instance.survey.user_id != request_user_id:
+            return Response({"detail": "You do not have permission to update this entry."}, status=status.HTTP_403_FORBIDDEN)
+
+        return super(SurveyQuestionViewSet, self).update(request, *args, **kwargs)
+
+    def destroy(self, request, *args, **kwargs):
+        if 'Authorization' not in request.headers:
+            return Response({'detail': 'Authorization header is missing'}, status=status.HTTP_401_UNAUTHORIZED)
+        request_user_id = self.request.user.id
+        instance = self.get_object()
+        if instance.survey.user_id != request_user_id:
+            raise PermissionDenied({'detail': 'You do not have permission to delete this entry.'})
+
+        response = super(SurveyQuestionViewSet, self).destroy(request, *args, **kwargs)
         return response

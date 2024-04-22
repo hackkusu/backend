@@ -1,4 +1,4 @@
-from ...models import Survey, SmsConversation, SMS, SMSReceived, Account, SurveyQuestion
+from ...models import Survey, Conversation, SMS, SMSReceived, Account, SurveyQuestion
 import os
 from twilio.rest import Client
 from twilio.request_validator import RequestValidator

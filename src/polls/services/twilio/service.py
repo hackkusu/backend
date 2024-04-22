@@ -1,4 +1,5 @@
-from ...models import Survey, SmsConversation, SMS, SMSReceived, Account, SurveyResponse, SurveyQuestion
+from ...models import Survey, Conversation, SMS, SMSReceived, Account, SurveyResponse, SurveyQuestion, SMSSent, \
+    SmsConversation
 import os
 from twilio.rest import Client
 from twilio.request_validator import RequestValidator
@@ -32,59 +33,116 @@ class TwilioService:
         sms_received.save()
 
         # todo: check if it is a stop word
+        # Handle stop words
+        stop_words = ['STOP', 'END', 'CANCEL', 'UNSUBSCRIBE']  # Define stop words
+        if data.get('Body').strip().upper() in stop_words:
+            # TODO: handle the stop request
+            # For example, mark the conversation as stopped, or unsubscribe the user
+            pass
+
+        response_msg = None
+
+        # # Check if it is a start code from an existing campaign
+        # start_code = data.get('Body').strip()
+        # new_survey = Survey.objects.filter(phone__number=data.get('To'), start_code__iexact=start_code).first()
+
 
         # todo: check existing conversation
-        sms_conversation: SmsConversation = SmsConversation.objects.filter(phone_number=data.get('From'), survery__phone__number=data.get('To')).first()
+        conversation: Conversation = Conversation.objects.filter(phone_number=data.get('From'), survery__phone__number=data.get('To'), closed=False).first()
 
-        if not sms_conversation:
+
+
+        if not conversation:
             # todo: check if text is keyword from existing campaign
-            new_survey = Survey.objects.filter(phone__number=data.get('To'), start_code__iexact=data.get('Body')).first()
+            new_survey = Survey.objects.filter(phone__number=data.get('To'), start_code__iexact=data.get('Body').strip()).first()
 
             if new_survey is not None:
-                sms_conversation = SmsConversation(survery=new_survey, last_sms=sms, phone_number=data.get('From'))
-                sms_conversation.save()
+                conversation = Conversation(survery=new_survey, last_sms=sms, phone_number=data.get('From'))
+                conversation.save()
 
-        if sms_conversation is not None:
-            if sms_conversation.last_survey_question_id is not None:
-                next_survey_question: SurveyQuestion = sms_conversation.survery.survey_questions.filter(sort_order=sms_conversation.last_survey_question.sort_order + 1).first()
+                # new survey first question
+                next_survey_question: SurveyQuestion = conversation.survery.survey_questions.filter(
+                    sort_order=0).first()
+                conversation.last_survey_question = next_survey_question
+                conversation.save()
 
-                if next_survey_question is None:
-                    next_survey_question = sms_conversation.survery.survey_questions.filter(sort_order=sms_conversation.last_survey_question.sort_order).first()
+                TwilioService.send_outgoing_sms(account,
+                                                next_survey_question.question,
+                                                data.get('To'), data.get('From'))
 
-                sms_conversation.last_survey_question = next_survey_question
-                sms_conversation.save()
+                return TwilioService.send_outgoing_sms(account, "Text in as many times as you'd like then send \"done\" by itself when you are finished with each response.", data.get('To'), data.get('From'))
+                # send text as many times as you'd like and send done by itself when complete
             else:
-                next_survey_question: SurveyQuestion = sms_conversation.survery.survey_questions.filter(sort_order=0).first()
-                sms_conversation.last_survey_question = next_survey_question
-                sms_conversation.save()
+                return TwilioService.send_outgoing_sms(account,
+                                                       'To start a survey, please text us the unique START code you received. Text STOP to be permanetely unsubscribed.',
+                                                       data.get('To'), data.get('From'))
+
+        if conversation is not None:
+
+            # TODO: Check if the user wants to end the survey, e.g., by looking for 'DONE' in the response
+            if 'DONE' in data.get('Body').strip().upper():
+                # end_survey(sms_conversation)
+
+                if conversation.last_survey_question_id is not None:
+                    next_survey_question: SurveyQuestion = conversation.survery.survey_questions.filter(sort_order=conversation.last_survey_question.sort_order + 1).first()
+
+                    if next_survey_question is not None:
+                        response_msg = next_survey_question.question
+                        conversation.last_survey_question = next_survey_question
+                        conversation.save()
+                    else:
+                        response_msg = 'Thank you for completing the survey!'
+                        conversation.closed = True
+                        conversation.save()
+
+                else:
+                    # new survey first question todo: is this needed?
+                    next_survey_question: SurveyQuestion = conversation.survery.survey_questions.filter(sort_order=0).first()
+                    conversation.last_survey_question = next_survey_question
+                    conversation.save()
 
 
             # todo: sentiment analysis and save survey response
 
-            # survey_response = SurveyResponse()
-            service = SentimentAnalysisService()
-            service.analyze_sentiment_on_survey_response(list(SMS.objects.all()), sms, sms_conversation, next_survey_question)
 
 
-            # todo: decide what to text them back
-            response_msg = next_survey_question.question
+                # survey_response = SurveyResponse()
+                service = SentimentAnalysisService()
+                service.analyze_sentiment_on_survey_response(list(SMS.objects.all()), sms, conversation)
 
 
-            # Find your Account SID and Auth Token at twilio.com/console
-            # and set the environment variables. See http://twil.io/secure
-            # account_sid = os.environ['TWILIO_ACCOUNT_SID']
-            # auth_token = os.environ['TWILIO_AUTH_TOKEN']
-            client = Client(account.twilio_account_sid, account.twilio_auth_token)
-
-            message = client.messages \
-                .create(
-                body=response_msg,
-                from_=data.get('To'),
-                to=data.get('From')
-            )
-
-            print(message.sid)
+                # todo: decide what to text them back
+                # response_msg = next_survey_question.question
 
 
-        # todo: record responses
-        pass
+                # Find your Account SID and Auth Token at twilio.com/console
+                # and set the environment variables. See http://twil.io/secure
+                # account_sid = os.environ['TWILIO_ACCOUNT_SID']
+                # auth_token = os.environ['TWILIO_AUTH_TOKEN']
+
+                return TwilioService.send_outgoing_sms(account, response_msg, data.get('To'), data.get('From'))
+            else:
+                sms_conversation = SmsConversation(sms=sms, conversation=conversation)
+                sms_conversation.save()
+
+    @staticmethod
+    def send_outgoing_sms(account: Account, msg, from_twilio_number, to_phone_number):
+        client = Client(account.twilio_account_sid, account.twilio_auth_token)
+
+        message = client.messages \
+            .create(
+            body=msg,
+            from_=from_twilio_number,
+            to=to_phone_number
+        )
+
+        # save sms received
+        sms_out = SMS(from_number=from_twilio_number, to_number=to_phone_number,
+                      message=msg, account=account, twilio_sid=message.sid)
+        sms_out.save()
+        sms_sent = SMSSent(sms=sms_out)
+        sms_sent.save()
+
+        print(message.sid)
+
+        return message

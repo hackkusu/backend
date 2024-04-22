@@ -2,6 +2,7 @@
 import datetime
 import getpass
 from django.core.management import BaseCommand
+from ...bll.qr.create_qr_bll import QRCodeBll
 
 import pickle
 
@@ -28,8 +29,7 @@ class Command(BaseCommand):
 
     def handle(self, *args, **kwargs):
         try:
-            pass
-            # RekognitionService().detect_labels()
+            QRCodeBll.generate_and_save_qr_code('4352131896', 'yea')
         except Exception as err:
             print(str(err))
             exit(1)

@@ -23,9 +23,12 @@ django-allauth
 dj-rest-auth[with_social]==4.0.0
 django-storages[google]
 google-api-python-client
-
+qrcode
 graphene-django
 django-graphql-jwt
 django-filter
 nltk
 pusher
+Pillow==9.5.0
+django-ratelimit
+humanize

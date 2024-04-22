@@ -1,9 +1,9 @@
 from django.contrib import admin
-from .models import User, SMS, Phone, SmsConversation,SMSReceived,SurveyQuestion,Survey,Account,SMSSent,SMSQueue
+from .models import User, SMS, Phone, Conversation,SMSReceived,SurveyQuestion,Survey,Account,SMSSent,SMSQueue
 
 admin.site.register(Phone)
 admin.site.register(SMS)
-admin.site.register(SmsConversation)
+admin.site.register(Conversation)
 admin.site.register(SMSReceived)
 admin.site.register(SurveyQuestion)
 admin.site.register(Survey)
