@@ -70,7 +70,7 @@ class TwilioService:
                                                 next_survey_question.question,
                                                 data.get('To'), data.get('From'))
 
-                return TwilioService.send_outgoing_sms(account, "Text in as many times as you'd like then send \"done\" by itself when you are finished.", data.get('To'), data.get('From'))
+                return TwilioService.send_outgoing_sms(account, "Text in as many times as you'd like then send \"done\" by itself when you are finished with each response.", data.get('To'), data.get('From'))
                 # send text as many times as you'd like and send done by itself when complete
             else:
                 return TwilioService.send_outgoing_sms(account,

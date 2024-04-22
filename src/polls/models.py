@@ -72,7 +72,7 @@ class Account(models.Model):
 
 class Phone(models.Model):
     id = models.AutoField(primary_key=True)
-    number = models.CharField(max_length=15, null=False)
+    number = models.CharField(max_length=15, null=False, unique=True)
     label = models.CharField(max_length=200, null=True)
     twilio_sid = models.CharField(max_length=34, null=True, blank=True)
     account = models.ForeignKey('Account', null=True, blank=True, related_name='phones', on_delete=models.CASCADE)
@@ -110,7 +110,7 @@ class SMS(models.Model):
 
 class Conversation(models.Model):
     id = models.BigAutoField(primary_key=True, db_column='ID')
-    phone_number = models.CharField(max_length=15, null=False, db_column='PhoneNumber')
+    phone_number = models.CharField(max_length=15, null=False, db_column='phone_number')
     survery = models.ForeignKey(
         'Survey',
         null=False,
@@ -159,6 +159,8 @@ class SmsConversation(models.Model):
         on_delete=models.CASCADE
     )
     created = models.DateTimeField(default=timezone.now, null=False)
+    processed = models.BooleanField(default=False, null=False)
+
     class Meta:
         db_table = 'sms_conversation'
         unique_together = ('sms', 'conversation')
@@ -291,6 +293,7 @@ class SurveyResponse(models.Model):
     survey = models.ForeignKey('Survey', related_name='survey_responses', on_delete=models.CASCADE, null=True, blank=True)
     survey_question = models.ForeignKey('SurveyQuestion', related_name='survey_responses', on_delete=models.CASCADE)
     sentiment_score = models.DecimalField(null=True, blank=True, decimal_places=4, max_digits=5)
+    conversation = models.ForeignKey('Conversation', related_name='survey_responses', null=True, blank=True, on_delete=models.CASCADE)
 
     class Meta:
         db_table = 'survey_response'
@@ -307,7 +310,12 @@ def broadcast_update(sender, instance, created, **kwargs):
         )
 
         pusher_client.trigger('survey-response-channel', 'new-response', {
-            'message': 'A new response was added.'
+            'message': 'A new response was added.',
+            'survey_id': instance.survey.id,
+            'survey_name': instance.survey.name,
+            'survey_start_code': instance.survey.start_code,
+            'phoneNumber': instance.conversation.phone_number
+
             # You can send more data as needed
         })
 
@@ -365,6 +373,9 @@ class UserProfile(models.Model):
     user = models.OneToOneField('User', related_name='user_profiles', null=False, on_delete=models.CASCADE)
     dark_mode = models.BooleanField(null=True, blank=True, default=True)
     profile_photo_url = models.TextField(blank=True, null=True)
+
+    class Meta:
+        db_table = 'user_profile'
 
 
 
