@@ -1,3 +1,6 @@
+from twilio.twiml.voice_response import Sms
+
+from ..sentiment_analysis.service import SentimentAnalysisService
 from ...models import Survey, SmsConversation, SMS, SMSReceived, Account, SurveyResponse, SurveyQuestion
 import os
 from twilio.rest import Client
@@ -82,6 +85,7 @@ class TwilioService:
 
             print(message.sid)
 
+        SentimentAnalysisService.analyze_sentiment_on_survey_response(list(SMS.objects.all()), sms, sms_conversation, next_survey_question)
 
         # todo: record responses
         pass
