@@ -315,7 +315,7 @@ def broadcast_update(sender, instance, created, **kwargs):
             'survey_name': instance.survey.name,
             'survey_start_code': instance.survey.start_code,
             'phoneNumber': instance.conversation.phone_number,
-            'response': instance.response_body,
+            'response': instance.response_body[:160],
             'sentiment': instance.sentiment
 
             # You can send more data as needed
